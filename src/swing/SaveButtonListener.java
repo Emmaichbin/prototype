@@ -25,7 +25,7 @@ public class SaveButtonListener implements ActionListener {
 
 	@SuppressWarnings("unchecked")
 	public SaveButtonListener() {
-		j_result_list = (JList<Formula>) R.getInstance().getObject("result_list");
+		j_result_list = (JList<Formula>) Register.getInstance().getObject("result_list");
 	}
 
 	private SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");

@@ -48,7 +48,7 @@ import org.semanticweb.owlapi.model.OWLSubObjectPropertyOfAxiom;
  *
  * @author Yizheng
  */
-public class Converter {
+public class Converter4ELH {
 		
 	public AtomicConcept getConceptfromClass(OWLEntity owlClass) {
 		return new AtomicConcept(owlClass.getIRI().toString());

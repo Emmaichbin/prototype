@@ -8,7 +8,6 @@ import java.util.List;
 import concepts.AtomicConcept;
 import connectives.And;
 import connectives.Exists;
-import connectives.Forall;
 import connectives.Inclusion;
 import connectives.Negation;
 import connectives.Or;
@@ -29,14 +28,12 @@ public class EChecker {
 
 		if (formula instanceof AtomicConcept) {
 			return formula.equals(concept);
-		} else if (formula instanceof Negation) {
-			return isPresent(concept, formula.getSubFormulas().get(0));
-		} else if (formula instanceof Exists || formula instanceof Forall) {
+		} else if (formula instanceof Exists) {
 			return isPresent(concept, formula.getSubFormulas().get(1));
 		} else if (formula instanceof Inclusion) {
 			return isPresent(concept, formula.getSubFormulas().get(0))
 					|| isPresent(concept, formula.getSubFormulas().get(1));
-		} else if (formula instanceof And || formula instanceof Or) {
+		} else if (formula instanceof And) {
 			List<Formula> operand_list = formula.getSubFormulas();
 			for (Formula operand : operand_list) {
 				if (isPresent(concept, operand)) {
@@ -52,13 +49,10 @@ public class EChecker {
 
 		if (formula instanceof AtomicRole) {
 			return formula.equals(role);
-		} else if (formula instanceof Negation) {
-			return isPresent(role, formula.getSubFormulas().get(0));
-		} else if (formula instanceof Exists || formula instanceof Forall
-				|| formula instanceof Inclusion) {
+		} else if (formula instanceof Exists || formula instanceof Inclusion) {
 			return isPresent(role, formula.getSubFormulas().get(0))
 					|| isPresent(role, formula.getSubFormulas().get(1));
-		} else if (formula instanceof And || formula instanceof Or) {
+		} else if (formula instanceof And) {
 			List<Formula> operand_list = formula.getSubFormulas();
 			for (Formula operand : operand_list) {
 				if (isPresent(role, operand)) {
@@ -74,12 +68,9 @@ public class EChecker {
 
 		if (formula instanceof AtomicRole) {
 			return true;
-		} else if (formula instanceof Negation) {
-			return hasRole(formula.getSubFormulas().get(0));
-		} else if (formula instanceof Exists || formula instanceof Forall
-				|| formula instanceof Inclusion) {
+		} else if (formula instanceof Exists || formula instanceof Inclusion) {
 			return hasRole(formula.getSubFormulas().get(0)) || hasRole(formula.getSubFormulas().get(1));
-		} else if (formula instanceof And || formula instanceof Or) {
+		} else if (formula instanceof And) {
 			List<Formula> operand_list = formula.getSubFormulas();
 			for (Formula operand : operand_list) {
 				if (hasRole(operand)) {
@@ -93,14 +84,12 @@ public class EChecker {
 
 	public boolean hasRoleRestriction(Formula formula) {
 
-		if (formula instanceof Negation) {
-			return hasRoleRestriction(formula.getSubFormulas().get(0));
-		} else if (formula instanceof Exists || formula instanceof Forall) {
+		if (formula instanceof Exists) {
 			return true;
 		} else if (formula instanceof Inclusion) {
 			return hasRoleRestriction(formula.getSubFormulas().get(0))
 					|| hasRoleRestriction(formula.getSubFormulas().get(1));
-		} else if (formula instanceof And || formula instanceof Or) {
+		} else if (formula instanceof And) {
 			List<Formula> operand_list = formula.getSubFormulas();
 			for (Formula operand : operand_list) {
 				if (hasRoleRestriction(operand)) {

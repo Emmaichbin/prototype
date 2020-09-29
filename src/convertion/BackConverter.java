@@ -7,23 +7,25 @@ import java.util.List;
 import java.util.Set;
 
 import org.semanticweb.owlapi.apibinding.OWLManager;
+import org.semanticweb.owlapi.model.EntityType;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLEntity;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLObjectPropertyExpression;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.semanticweb.owlapi.model.OWLSubClassOfAxiom;
 
 import checkexistence.EChecker;
 import concepts.AtomicConcept;
 import concepts.BottomConcept;
 import concepts.TopConcept;
 import connectives.And;
-import connectives.Equivalence;
 import connectives.Exists;
 import connectives.Forall;
 import connectives.Inclusion;
@@ -34,35 +36,54 @@ import individual.Individual;
 import roles.AtomicRole;
 import roles.BottomRole;
 import roles.TopRole;
-import simplification.Simplifier;
+
 
 public class BackConverter {
 
 	public BackConverter() {
 
 	}
+	
 
 	private OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
 	private OWLDataFactory factory = manager.getOWLDataFactory();
+	
+	public Set<OWLEntity> getClassfromConcept(Set<AtomicConcept> concept_set) {
+		
+		Set<OWLEntity> d_sig = new HashSet<>();
+		
+		for (AtomicConcept concept : concept_set) {
+			d_sig.add(getClassfromConcept(concept));
+		}
+		
+		return d_sig;
+	}
+	
+	public OWLEntity getClassfromConcept(AtomicConcept concept) {
+				
+		OWLEntity owlentity = factory.getOWLEntity(EntityType.OBJECT_PROPERTY, IRI.create(concept.getText()));
+		
+		return owlentity;
+	}
 	
 	public List<Formula> toAxiomsList(List<Formula> input_list) throws CloneNotSupportedException {
 		
 		List<Formula> output_list = new ArrayList<>();
 		for (Formula clause : input_list) {
 			if (clause == BottomConcept.getInstance()) {						
-				return Collections.singletonList(toAxiom(BottomConcept.getInstance()));	
+				return Collections.singletonList(toInclusion(BottomConcept.getInstance()));	
 				
 			} else if (clause != TopConcept.getInstance()) {
 				//Simplifier pp = new Simplifier();
 				//Formula el_clause = pp.removeDoubleNegations(toELH(clause));
 				//Formula el_clause = pp.removeDoubleNegations(clause);
-				Formula axiom = toAxiom(clause);
+				Formula axiom = toInclusion(clause);
 				output_list.add(axiom);
 			}
 		}
 		
 		if (output_list.isEmpty()) {			
-			output_list.add(toAxiom(TopConcept.getInstance()));
+			output_list.add(toInclusion(TopConcept.getInstance()));
 		}
 				
 		Set<Formula> output_set = new HashSet<>(output_list);
@@ -77,12 +98,12 @@ public class BackConverter {
 		Set<Formula> output_set = new HashSet<>();
 		for (Formula clause : input_list) {
 			if (clause == BottomConcept.getInstance() || clause == BottomRole.getInstance()) {									
-				return Collections.singleton(toAxiom(BottomConcept.getInstance()));
+				return Collections.singleton(toInclusion(BottomConcept.getInstance()));
 				
 			} else if (clause != TopConcept.getInstance() && clause != TopRole.getInstance()) {
 				//PreProcessor pp = new PreProcessor();
 				//Formula el_clause = pp.removeDoubleNegations(toELH(clause));
-				Formula axiom = toAxiom(clause);
+				Formula axiom = toInclusion(clause);
 				output_set.add(axiom);
 			}
 		}
@@ -91,7 +112,7 @@ public class BackConverter {
 	}
 	
 	
-	private Formula toAxiom(Formula formula) {
+	private Formula toInclusion(Formula formula) {
 
 		if (formula instanceof Inclusion) {
 			return formula;
@@ -239,7 +260,7 @@ public class BackConverter {
 
 	}	*/
 	
-	private Formula toALC(Formula formula) throws CloneNotSupportedException {
+	/*private Formula toALC(Formula formula) throws CloneNotSupportedException {
 		
 		if (formula instanceof Negation) {
 			formula.getSubFormulas().set(0, toALC(formula.getSubFormulas().get(0)));
@@ -303,7 +324,7 @@ public class BackConverter {
 		}
 
 		return formula;
-	}
+	}*/
 	
 	/**
 	 * else if (formula instanceof Or) {
@@ -405,6 +426,17 @@ public class BackConverter {
 
 		return formula;
 	}*/
+	
+	public OWLOntology toOWLSubClassOfAxiomOntology(List<Formula> formula_list) throws OWLOntologyCreationException {
+
+		OWLOntology ontology = manager.createOntology(IRI.generateDocumentIRI());
+
+		for (Formula formula : formula_list) {
+			manager.addAxiom(ontology, toOWLSubClassOfAxiom(formula));
+		}
+
+		return ontology;
+	}
 
 
 	public OWLOntology toOWLOntology(List<Formula> formula_list) throws OWLOntologyCreationException {
@@ -418,7 +450,7 @@ public class BackConverter {
 		return ontology;
 	}
 	
-	public Set<OWLAxiom> toOWLAxioms(Set<Formula> formula_set) {
+	public Set<OWLAxiom> toOWLAxioms(List<Formula> formula_set) {
 
 		Set<OWLAxiom> output_set = new HashSet<>();
 		
@@ -427,6 +459,15 @@ public class BackConverter {
 		}
 
 		return output_set;
+	}
+	
+	
+	public OWLAxiom toOWLSubClassOfAxiom(Formula inclusion) {
+		
+		OWLSubClassOfAxiom scoa = factory.getOWLSubClassOfAxiom(toOWLClassExpression(inclusion.getSubFormulas().get(0)),
+					toOWLClassExpression(inclusion.getSubFormulas().get(1)));
+		
+		return scoa;
 	}
 
 	public OWLAxiom toOWLAxiom(Formula inclusion) {

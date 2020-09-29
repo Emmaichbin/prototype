@@ -24,6 +24,17 @@ import formula.Formula;
 import roles.AtomicRole;
 
 public class LoadButtonListener implements ActionListener {
+	
+	
+	public OWLOntology ontology = null;
+
+	public void setontology(OWLOntology onto) {
+		ontology = onto;
+	}
+ 
+     public OWLOntology getontology() {  
+       return ontology;  
+   }  
 
 	private JList<Formula> formula_list;
 	private JList<AtomicRole> role_list;
@@ -33,10 +44,10 @@ public class LoadButtonListener implements ActionListener {
 
 	@SuppressWarnings("unchecked")
 	public LoadButtonListener() {
-		formula_list = (JList<Formula>) R.getInstance().getObject("formula_list");
-		role_list = (JList<AtomicRole>) R.getInstance().getObject("role_list");
-		concept_list = (JList<AtomicConcept>) R.getInstance().getObject("concept_list");
-		result_list = (JList<AtomicConcept>) R.getInstance().getObject("result_list");
+		formula_list = (JList<Formula>) Register.getInstance().getObject("formula_list");
+		role_list = (JList<AtomicRole>) Register.getInstance().getObject("role_list");
+		concept_list = (JList<AtomicConcept>) Register.getInstance().getObject("concept_list");
+		result_list = (JList<AtomicConcept>) Register.getInstance().getObject("result_list");
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -87,7 +98,7 @@ public class LoadButtonListener implements ActionListener {
 			//BackConverter bc = new BackConverter();
 			//PreProcessor pp = new PreProcessor();
 			try {
-				OWLOntology ontology = manager.loadOntologyFromOntologyDocument(new IRIDocumentSource(iri),
+				ontology = manager.loadOntologyFromOntologyDocument(new IRIDocumentSource(iri),
 						new OWLOntologyLoaderConfiguration().setLoadAnnotationAxioms(true));
 				System.out.println("===================================================");
 				System.out.println("Ontology Metrics:");
@@ -95,22 +106,11 @@ public class LoadButtonListener implements ActionListener {
 				System.out.println("No. of Concept Names: " + ontology.getClassesInSignature().size());
 				System.out.println("No. of Role Names: " + ontology.getObjectPropertiesInSignature().size());
 				System.out.println("No. of Individuals: " + ontology.getIndividualsInSignature().size());
-				System.out.println("No. of OWLSubClassOfAxiom: " + Converter.getI());
-				System.out.println("No. of OWLEquivalentClassesAxiom: " + Converter.getJ());
-				System.out.println("No. of OWLDisjointClassesAxiom: " + Converter.getK());
-				System.out.println("No. of OWLDisjointUnionAxiom: " + Converter.getL());
-				System.out.println("No. of OWLObjectPropertyDomainAxiom" + Converter.getM());
-				System.out.println("No. of OWLObjectPropertyRangeAxiom: " + Converter.getN());
-				System.out.println("No. of OWLSubObjectPropertyOfAxiom: " + Converter.getO());
-				System.out.println("No. of OWLEquivalentObjectPropertiesAxiom: " + Converter.getP());
-				System.out.println("No. of OWLClassAssertionAxiom: " + Converter.getQ());
-				System.out.println("No. of OWLObjectPropertyAssertionAxiom: " + Converter.getR());
-				System.out.println("No. of OtherAxiom: " + Converter.getS());
 				System.out.println("===================================================");
 				//formulaList = bc.toAxiomsList(pp.getCNF(pp.getSimplifiedForm(pp.getClauses(ct.OntologyConverter_ShortForm(ontology)))));
-				formulaList = ct.OntologyConverter_ShortForm(ontology);
-				roleList = ct.getRolesInSignature_ShortForm(ontology);
-				conceptList = ct.getConceptsInSignature_ShortForm(ontology);
+				formulaList = ct.OntologyConverter(ontology);
+				roleList = ct.getRolesInSignature(ontology);
+				conceptList = ct.getConceptsInSignature(ontology);
 				Collections.sort(roleList);
 				Collections.sort(conceptList);
 			} catch (OWLOntologyCreationException e2) {

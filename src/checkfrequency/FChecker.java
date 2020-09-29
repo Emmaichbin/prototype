@@ -5,10 +5,7 @@ import java.util.List;
 import concepts.AtomicConcept;
 import connectives.And;
 import connectives.Exists;
-import connectives.Forall;
 import connectives.Inclusion;
-import connectives.Negation;
-import connectives.Or;
 import formula.Formula;
 import roles.AtomicRole;
 
@@ -33,14 +30,12 @@ public class FChecker {
 
 		if (formula instanceof AtomicConcept) {
 			return formula.equals(concept) ? 1 : 0;
-		} else if (formula instanceof Negation) {
-			return negative(concept, formula.getSubFormulas().get(0));
-		} else if (formula instanceof Exists || formula instanceof Forall) {
+		} else if (formula instanceof Exists) {
 			return positive(concept, formula.getSubFormulas().get(1));
 		} else if (formula instanceof Inclusion) {
 			return negative(concept, formula.getSubFormulas().get(0))
 					+ positive(concept, formula.getSubFormulas().get(1));
-		} else if (formula instanceof And || formula instanceof Or) {
+		} else if (formula instanceof And) {
 			int sum = 0;
 			List<Formula> operand_list = formula.getSubFormulas();
 			for (Formula operand : operand_list) {
@@ -65,14 +60,12 @@ public class FChecker {
 
 	public int negative(AtomicConcept concept, Formula formula) {
 
-		if (formula instanceof Negation) {
-			return positive(concept, formula.getSubFormulas().get(0));
-		} else if (formula instanceof Exists || formula instanceof Forall) {
+		if (formula instanceof Exists) {
 			return negative(concept, formula.getSubFormulas().get(1));
 		} else if (formula instanceof Inclusion) {
 			return positive(concept, formula.getSubFormulas().get(0))
 					+ negative(concept, formula.getSubFormulas().get(1));
-		} else if (formula instanceof And || formula instanceof Or) {
+		} else if (formula instanceof And) {
 			int sum = 0;
 			List<Formula> operand_list = formula.getSubFormulas();
 			for (Formula operand : operand_list) {
@@ -99,15 +92,11 @@ public class FChecker {
 
 		if (formula instanceof AtomicRole) {
 			return formula.equals(role) ? 1 : 0;
-		} else if (formula instanceof Negation) {
-			return negative(role, formula.getSubFormulas().get(0));
 		} else if (formula instanceof Exists) {
 			return positive(role, formula.getSubFormulas().get(0)) + positive(role, formula.getSubFormulas().get(1));
-		} else if (formula instanceof Forall) {
-			return negative(role, formula.getSubFormulas().get(0)) + positive(role, formula.getSubFormulas().get(1));
 		} else if (formula instanceof Inclusion) {
 			return negative(role, formula.getSubFormulas().get(0)) + positive(role, formula.getSubFormulas().get(1));
-		} else if (formula instanceof And || formula instanceof Or) {
+		} else if (formula instanceof And) {
 			int sum = 0;
 			List<Formula> operand_list = formula.getSubFormulas();
 			for (Formula operand : operand_list) {
@@ -132,16 +121,12 @@ public class FChecker {
 	
 	public int negative(AtomicRole role, Formula formula) {
 
-		if (formula instanceof Negation) {
-			return positive(role, formula.getSubFormulas().get(0));
-		} else if (formula instanceof Exists) {
+		if (formula instanceof Exists) {
 			return negative(role, formula.getSubFormulas().get(0)) + negative(role, formula.getSubFormulas().get(1));
-		} else if (formula instanceof Forall) {
-			return positive(role, formula.getSubFormulas().get(0)) + negative(role, formula.getSubFormulas().get(1));
 		} else if (formula instanceof Inclusion) {
 			return positive(role, formula.getSubFormulas().get(0))
 					+ negative(role, formula.getSubFormulas().get(1));
-		} else if (formula instanceof And || formula instanceof Or) {
+		} else if (formula instanceof And) {
 			int sum = 0;
 			List<Formula> operand_list = formula.getSubFormulas(); 
 			for (Formula operand : operand_list) {

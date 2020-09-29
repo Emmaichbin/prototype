@@ -31,10 +31,10 @@ public class ForgetButtonListener implements ActionListener {
 
 	@SuppressWarnings("unchecked")
 	public ForgetButtonListener() {
-		Jrole_list = (JList<AtomicRole>) R.getInstance().getObject("role_list");
-		Jconcept_list = (JList<AtomicConcept>) R.getInstance().getObject("concept_list");
+		Jrole_list = (JList<AtomicRole>) Register.getInstance().getObject("role_list");
+		Jconcept_list = (JList<AtomicConcept>) Register.getInstance().getObject("concept_list");
 		// Jformula_list = (JList<Formula>) R.getInstance().getObject("formula_list");
-		Jresult_list = (JList<Formula>) R.getInstance().getObject("result_list");
+		Jresult_list = (JList<Formula>) Register.getInstance().getObject("result_list");
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -92,7 +92,7 @@ public class ForgetButtonListener implements ActionListener {
 			long startTime = System.currentTimeMillis();
 			ontology = manager.loadOntologyFromOntologyDocument(new IRIDocumentSource(iri),
 					new OWLOntologyLoaderConfiguration().setLoadAnnotationAxioms(true));
-			formula_list = ct.OntologyConverter_ShortForm(ontology);
+			formula_list = ct.OntologyConverter(ontology);
 			result_list = fame.FameRC(r_sig, c_sig, formula_list);
 			long endTime = System.currentTimeMillis();
 			System.out.println("Duration = " + (endTime - startTime) + "millis");

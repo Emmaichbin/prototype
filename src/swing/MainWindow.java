@@ -31,10 +31,10 @@ public class MainWindow extends AbstractWindow {
 	}
 
 	protected void registerComponent() {
-		R.getInstance().registerObject("formula_list", formula_list);
-		R.getInstance().registerObject("role_list", role_list);
-		R.getInstance().registerObject("concept_list", concept_list);
-		R.getInstance().registerObject("result_list", result_list);
+		Register.getInstance().registerObject("formula_list", formula_list);
+		Register.getInstance().registerObject("role_list", role_list);
+		Register.getInstance().registerObject("concept_list", concept_list);
+		Register.getInstance().registerObject("result_list", result_list);
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })

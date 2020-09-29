@@ -2,17 +2,17 @@ package swing;
 
 import java.util.HashMap;
 
-public class R {
-	private static R instance = null;
+public class Register {
+	private static Register instance = null;
 	private HashMap<String, Object> map;
 
-	private R() {
+	private Register() {
 		map = new HashMap<String, Object>();
 	}
 
-	public static R getInstance() {
+	public static Register getInstance() {
 		if (instance == null)
-			instance = new R();
+			instance = new Register();
 		return instance;
 	}
 
