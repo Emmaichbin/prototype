@@ -7,7 +7,6 @@ import java.util.Set;
 
 import com.google.common.collect.Sets;
 
-import checkexistence.EChecker;
 import concepts.AtomicConcept;
 import connectives.And;
 import connectives.Exists;
@@ -73,52 +72,51 @@ public class SubsetExtractor {
 	}
 	
 	public List<Formula> getConceptSubset(AtomicConcept concept, List<Formula> formula_list) {
-
-		EChecker ce = new EChecker();
 		
-		List<Formula> concept_list = new ArrayList<>();
+		List<Formula> output_list = new ArrayList<>();
 
 		for (int i = 0; i < formula_list.size(); i++) {
 			Formula formula = formula_list.get(i);
-			if (ce.isPresent(concept, formula)) {
-				concept_list.add(formula);
+			Set<AtomicConcept> c_set = formula.get_c_sig();
+			if (c_set.contains(concept)) {
+				System.out.println("pivot concept = " + formula);
+				System.out.println("Formula 1 [" + i + "] = " + formula);
+				output_list.add(formula);
 				formula_list.remove(i);
 				i--;
 			}
 		}
 
-		return concept_list;
+		return output_list;
 	}
 		
 	public List<Formula> getConceptSubset(Set<AtomicConcept> c_sig, List<Formula> formula_list) {
 
-		//System.out.println(formula_list);
-		List<Formula> c_sig_subset = new ArrayList<>();
+		List<Formula> c_sig_list = new ArrayList<>();
 
 		for (int i = 0; i < formula_list.size(); i++) {
 			Formula formula = formula_list.get(i);
-			if (!Sets.intersection(getConceptsFromFormula(formula), c_sig).isEmpty()) {
-				c_sig_subset.add(formula);
+			Set<AtomicConcept> c_set = formula.get_c_sig();
+			if (!Sets.intersection(c_set, c_sig).isEmpty()) {
+				c_sig_list.add(formula);
 				formula_list.remove(i);
 				i--;
 			}
+			System.out.println("Formula 2 [" + i +"] = " + formula);
 		}
-		
-		formula_list.removeAll(c_sig_subset);
-		
-		//System.out.println(c_sig_subset);
-
-		return c_sig_subset;
+		return c_sig_list;
 	}
 		
 	public List<Formula> getRoleSubset(AtomicRole role, List<Formula> formula_list) {
 
-		EChecker ce = new EChecker();
 		List<Formula> role_list = new ArrayList<>();
 
 		for (int i = 0; i < formula_list.size(); i++) {
 			Formula formula = formula_list.get(i);
-			if (ce.isPresent(role, formula)) {
+			Set<AtomicRole> r_set = formula.get_r_sig();
+			if (r_set.contains(role)) {
+				System.out.println("pivot role = " + role);
+				System.out.println("Formula 3 [" + i +"] = " + formula);
 				role_list.add(formula);
 				formula_list.remove(i);
 				i--;
@@ -130,20 +128,20 @@ public class SubsetExtractor {
 	
 	public List<Formula> getRoleSubset(Set<AtomicRole> r_sig, List<Formula> formula_list) {
 
-		List<Formula> r_sig_subset = new ArrayList<>();
+		List<Formula> r_sig_list = new ArrayList<>();
 
 		for (int i = 0; i < formula_list.size(); i++) {
 			Formula formula = formula_list.get(i);
-			if (!Sets.intersection(getRolesFromFormula(formula), r_sig).isEmpty()) {
-				r_sig_subset.add(formula);
+			Set<AtomicRole> r_set = formula.get_r_sig();
+			if (!Sets.intersection(r_set, r_sig).isEmpty()) {
+				r_sig_list.add(formula);
 				formula_list.remove(i);
 				i--;
 			}
+			System.out.println("Formula 4 [" + i +"] = " + formula);
 		}
 
-		formula_list.removeAll(r_sig_subset);
-
-		return r_sig_subset;
+		return r_sig_list;
 	}
 
 }

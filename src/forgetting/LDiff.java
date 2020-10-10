@@ -47,25 +47,25 @@ public class LDiff {
 
 		Set<OWLClass> c_sig_1 = onto_1.getClassesInSignature();
 		Set<OWLClass> c_sig_2 = onto_2.getClassesInSignature();
-		Set<OWLClass> c_sig = new HashSet<>(Sets.difference(c_sig_1, c_sig_2));
+		Set<OWLClass> c_sig = new HashSet<>(Sets.difference(c_sig_2, c_sig_1));
 		Set<OWLObjectProperty> r_sig_1 = onto_1.getObjectPropertiesInSignature();
 		Set<OWLObjectProperty> r_sig_2 = onto_2.getObjectPropertiesInSignature();
-		Set<OWLObjectProperty> r_sig = new HashSet<>(Sets.difference(r_sig_1, r_sig_2));
+		Set<OWLObjectProperty> r_sig = new HashSet<>(Sets.difference(r_sig_2, r_sig_1));
 
 		Converter ct = new Converter();
 		BackConverter bc = new BackConverter();
 		//Simplifier pp = new Simplifier();
-		Forgetter forget = new Forgetter();
+		Forgetter forgetter = new Forgetter();
 
 		Set<AtomicRole> role_set = ct.getRolesfromObjectProperties(r_sig);
 		Set<AtomicConcept> concept_set = ct.getConceptsfromClasses(c_sig);
-		List<Formula> formula_list = ct.OntologyConverter(onto_1);
+		List<Formula> formula_list = ct.OntologyConverter(onto_2);
 
 		System.out.println("The forgetting task is to eliminate [" + concept_set.size() + "] concept names and ["
 				+ role_set.size() + "] role names from [" + formula_list.size() + "] normalized axioms");
 
 		long startTime_1 = System.currentTimeMillis();
-		Set<OWLAxiom> uniform_interpolant = bc.toOWLAxioms(forget.Forgetting(role_set, concept_set, formula_list));
+		Set<OWLAxiom> uniform_interpolant = bc.toOWLAxioms(forgetter.Forgetting(role_set, concept_set, formula_list));
 		System.out.println("ui size = " + uniform_interpolant.size());
 		long endTime_1 = System.currentTimeMillis();
 		System.out.println("Forgetting Duration = " + (endTime_1 - startTime_1) + " millis");
@@ -79,13 +79,13 @@ public class LDiff {
 		// bc.toOWLAxioms(bc.toAxioms(pp.getCNF(pp.getSimplifiedForm(pp.getClauses(ct.AxiomsConverter(axiom_set_2))))));
 		// OWLOntology onto_2_normalised =
 		// manager.createOntology(axiom_set_2_normalised, IRI.generateDocumentIRI());
-		OWLReasoner reasoner = new Reasoner.ReasonerFactory().createReasoner(onto_2);
+		OWLReasoner reasoner = new Reasoner.ReasonerFactory().createReasoner(onto_1);
 		long startTime_2 = System.currentTimeMillis();
 		for (OWLAxiom axiom : uniform_interpolant) {
 			if (!reasoner.isEntailed(axiom)) {
 				manager.applyChange(new AddAxiom(witness_complete_onto, axiom));
 				System.out.println("witness_complete = " + axiom);
-				if (onto_1.getAxioms().contains(axiom)) {
+				if (onto_2.getAxioms().contains(axiom)) {
 					manager.applyChange(new AddAxiom(witness_explicit_onto, axiom));
 					System.out.println("witness_explicit = " + axiom);
 				} else {
@@ -243,20 +243,19 @@ public class LDiff {
 		 * //file:///C:/Users/Yizheng/Desktop/ncit/18.08e.owl
 		 * //file:///C:/Users/Yizheng/Desktop/ncit/17.12e.owl
 		 * //file:///C:/Users/Yizheng/Desktop/ncit/17.11e.owl
+		 * file:///C:/Users/zhaoy/Desktop/snomed_ct/snomed_ct_intl_20170731.owl
 		 * file:///C:/Users/zhaoy/Desktop/snomed_ct/snomed_ct_australian.owl
-		 * //file:///C:/Users/Yizheng/Desktop/snomed_ct/snomed_ct_australian.owl
-		 * //file:///C:/Users/Yizheng/Desktop/snomed_ct/snomed_ct_intl_20170731.owl
-		 * //C:\\Users\\Yizheng\\Desktop\\ncit //C:\\Users\\Yizheng\\Desktop\\snomed_ct
+		 * file:///C:/Users/zhaoy/Desktop/snomed_ct/Test%20data%20for%20logical%20difference/Test%20Data/snomed_ct_interntional/ontology_201707.owl
+		 * file:///C:/Users/zhaoy/Desktop/snomed_ct/Test%20data%20for%20logical%20difference/Test%20Data/snoemd_ct_country_extensions/snomed_ct_australian.owl
 		 * 
 		 * long startTime1 = System.currentTimeMillis(); LDiff diff = new LDiff();
 		 * diff.compute_LDiff(onto_1, onto_2, filePath3); long endTime1 =
 		 * System.currentTimeMillis();
 		 
 
-		// System.out.println("Total Duration = " + (endTime1 - startTime1) + "
-		// millis");
+		// System.out.println("Total Duration = " + (endTime1 - startTime1) + "millis");
 
-		//sc1.close();
+		// sc1.close();
 		// sc2.close();
 		// sc3.close();
 	}*/

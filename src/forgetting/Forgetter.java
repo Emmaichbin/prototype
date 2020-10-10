@@ -60,8 +60,7 @@ public class Forgetter {
 				if (pivot_list_normalised.isEmpty()) {
 					
 				} else {
-					pivot_list_normalised = di.introduceDefiners(concept, pivot_list_normalised);
-	
+					pivot_list_normalised = di.introduceDefiners(concept, pivot_list_normalised);	
 					pivot_list_normalised = inf.combination_A(concept, pivot_list_normalised);
 					c_sig_list_normalised.addAll(pivot_list_normalised);
 				}

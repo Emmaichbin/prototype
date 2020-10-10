@@ -1,5 +1,8 @@
 package concepts;
 
+
+import java.util.HashSet;
+
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
@@ -15,6 +18,16 @@ public class AtomicConcept extends ConceptExpression implements Comparable<Atomi
 
 	public AtomicConcept(String str) {
 		super(str);
+		this.c_sig = new HashSet<>();
+		this.r_sig = new HashSet<>();
+		this.set_c_sig(this);
+	}
+	
+	public static void main(String[] args) {	
+		AtomicConcept ac = new AtomicConcept("A");
+		System.out.println("ac.c_sig = " + ac.c_sig);
+		System.out.println("ac.r_sig = " + ac.r_sig);
+		
 	}
 
 	@Override

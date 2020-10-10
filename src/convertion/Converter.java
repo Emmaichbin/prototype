@@ -106,14 +106,35 @@ public class Converter {
 
 	public List<Formula> OntologyConverter(OWLOntology ontology) {
 
-		List<Formula> axiom_list = new ArrayList<>();		
+		List<Formula> formula_list = new ArrayList<>();		
 		Set<OWLLogicalAxiom> owlAxiom_set = ontology.getLogicalAxioms();
-
+		
+		long startTime1 = System.currentTimeMillis();
+		
 		for (OWLAxiom owlAxiom : owlAxiom_set) {
-			axiom_list.addAll(AxiomConverter(owlAxiom));
+			List<Formula> temp_list = AxiomConverter(owlAxiom);
+			for (Formula formula : temp_list) {
+				Formula subsumer = formula.getSubFormulas().get(1);
+				if (subsumer instanceof And) {
+					Formula subsumee = formula.getSubFormulas().get(0);
+					List<Formula> conjunct_list = subsumer.getSubFormulas();
+					for (Formula conjunct : conjunct_list) {
+						Formula inclusion = new Inclusion(subsumee, conjunct);
+						formula_list.add(inclusion);
+					}
+					
+				} else {
+					formula_list.add(formula);
+				}
+			}
+			//formula_list.addAll(temp_list);
 		}
+		
+		long endTime1 = System.currentTimeMillis();
+		
+		System.out.println("Convertion Duration = " + (endTime1 - startTime1) + " millis");
 
-		return axiom_list;
+		return formula_list;
 	}
 	
 	
@@ -123,6 +144,12 @@ public class Converter {
 
 		for (OWLAxiom owlAxiom : owlAxiom_set) {
 			formula_list.addAll(AxiomConverter(owlAxiom));
+		}
+		
+		for (Formula formula : formula_list) {
+			System.out.println("formula = " + formula);
+			System.out.println("formula.c_sig = " + formula.get_c_sig());
+			System.out.println("formula.r_sig = " + formula.get_r_sig());
 		}
 
 		return formula_list;

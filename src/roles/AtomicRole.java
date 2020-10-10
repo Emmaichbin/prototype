@@ -5,6 +5,8 @@
  */
 package roles;
 
+import java.util.HashSet;
+
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
@@ -19,6 +21,9 @@ public class AtomicRole extends RoleExpression implements Comparable<AtomicRole>
 
 	public AtomicRole(String str) {
 		super(str);
+		this.c_sig = new HashSet<>();
+		this.r_sig = new HashSet<>();
+		this.set_r_sig(this);
 	}
 
 	@Override

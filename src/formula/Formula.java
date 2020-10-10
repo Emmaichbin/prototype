@@ -14,6 +14,7 @@ import roles.AtomicRole;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -24,6 +25,8 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 public class Formula {
 
 	private List<Formula> subformulas;
+	protected Set<AtomicConcept> c_sig;
+	protected Set<AtomicRole> r_sig;
 	private String text;
 
 	public Formula() {
@@ -36,6 +39,30 @@ public class Formula {
 	
 	public Formula(int arity) {
 		this.subformulas = new ArrayList<>(arity);
+	}
+	
+	public Set<AtomicConcept> get_c_sig() {
+		return c_sig;
+	}
+	
+	public void set_c_sig(AtomicConcept ac) {
+		this.c_sig.add(ac);
+	}
+
+	public void set_c_sig(Set<AtomicConcept> c_sig) {
+		this.c_sig.addAll(c_sig);
+	}
+	
+	public Set<AtomicRole> get_r_sig() {
+		return r_sig;
+	}
+	
+	public void set_r_sig(AtomicRole ar) {
+		this.r_sig.add(ar);
+	}
+
+	public void set_r_sig(Set<AtomicRole> r_sig) {
+		this.r_sig.addAll(r_sig);
 	}
 
 	public String getText() {

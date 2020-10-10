@@ -5,6 +5,8 @@
  */
 package concepts;
 
+import java.util.HashSet;
+
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
@@ -17,6 +19,8 @@ public class TopConcept extends ConceptExpression {
 
 	public TopConcept() {
 		super("\u22A4");
+		this.c_sig = new HashSet<>();
+		this.r_sig = new HashSet<>();
 	}
 
 	public static TopConcept getInstance() {

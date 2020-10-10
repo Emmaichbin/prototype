@@ -21,13 +21,11 @@ import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLSubClassOfAxiom;
 
-import checkexistence.EChecker;
 import concepts.AtomicConcept;
 import concepts.BottomConcept;
 import concepts.TopConcept;
 import connectives.And;
 import connectives.Exists;
-import connectives.Forall;
 import connectives.Inclusion;
 import connectives.Negation;
 import connectives.Or;
@@ -471,15 +469,23 @@ public class BackConverter {
 	}
 
 	public OWLAxiom toOWLAxiom(Formula inclusion) {
-
-		EChecker ec = new EChecker();
 		//RBox
-		if (ec.hasRole(inclusion) && !ec.hasRoleRestriction(inclusion)) {
+		Formula subsumee = inclusion.getSubFormulas().get(0);
+		
+		if (subsumee instanceof AtomicRole) {
 			return factory.getOWLSubObjectPropertyOfAxiom(
 					toOWLObjectPropertyExpression(inclusion.getSubFormulas().get(0)),
 					toOWLObjectPropertyExpression(inclusion.getSubFormulas().get(1)));
 		//ABox
-		} else if (inclusion.getSubFormulas().get(0) instanceof Individual) {
+		} else {
+			return factory.getOWLSubClassOfAxiom(toOWLClassExpression(inclusion.getSubFormulas().get(0)),
+					toOWLClassExpression(inclusion.getSubFormulas().get(1)));
+		}
+
+	}
+	
+	/*
+	 * else if (inclusion.getSubFormulas().get(0) instanceof Individual) {
 			if (inclusion.getSubFormulas().get(1) instanceof Exists
 					&& inclusion.getSubFormulas().get(1).getSubFormulas().get(1) instanceof Individual) {
 				return factory.getOWLObjectPropertyAssertionAxiom(
@@ -491,30 +497,19 @@ public class BackConverter {
 						toOWLNamedIndividual(inclusion.getSubFormulas().get(0)));
 			}
 		//TBox
-		} else {
-			return factory.getOWLSubClassOfAxiom(toOWLClassExpression(inclusion.getSubFormulas().get(0)),
-					toOWLClassExpression(inclusion.getSubFormulas().get(1)));
-		}
-
-	}
+		} 
+	 * 
+	 */
 	
 	public OWLClassExpression toOWLClassExpression(Formula formula) {
 
 		if (formula == TopConcept.getInstance()) {
 			return factory.getOWLThing();
-		} else if (formula == BottomConcept.getInstance()) {
-			return factory.getOWLNothing();
 		} else if (formula instanceof AtomicConcept) {
 			OWLClass owlClass = factory.getOWLClass(IRI.create(formula.getText()));
 			return owlClass;
-		} else if (formula instanceof Negation) {
-			return factory.getOWLObjectComplementOf(toOWLClassExpression(formula.getSubFormulas().get(0)));
 		} else if (formula instanceof Exists) {
 			return factory.getOWLObjectSomeValuesFrom(
-					toOWLObjectPropertyExpression(formula.getSubFormulas().get(0)),
-					toOWLClassExpression(formula.getSubFormulas().get(1)));
-		} else if (formula instanceof Forall) {
-			return factory.getOWLObjectAllValuesFrom(
 					toOWLObjectPropertyExpression(formula.getSubFormulas().get(0)),
 					toOWLClassExpression(formula.getSubFormulas().get(1)));
 		} else if (formula instanceof And) {
@@ -524,13 +519,6 @@ public class BackConverter {
 				conjunct_set.add(toOWLClassExpression(conjunct));
 			}
 			return factory.getOWLObjectIntersectionOf(conjunct_set);
-		} else if (formula instanceof Or) {
-			Set<OWLClassExpression> disjunct_set = new HashSet<>();
-			List<Formula> disjunct_list = formula.getSubFormulas();
-			for (Formula disjunct : disjunct_list) {
-				disjunct_set.add(toOWLClassExpression(disjunct));
-			}
-			return factory.getOWLObjectUnionOf(disjunct_set);
 		}
 
 		assert false : "Unsupported ClassExpression: " + formula;

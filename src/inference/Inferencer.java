@@ -62,6 +62,7 @@ public class Inferencer {
 			
 			Formula subsumee = formula.getSubFormulas().get(0);
 			Formula subsumer = formula.getSubFormulas().get(1);
+			System.out.println("formula = " + formula);
 			
 			if (!ec.isPresent(concept, formula)) {
 				output_list.add(formula);

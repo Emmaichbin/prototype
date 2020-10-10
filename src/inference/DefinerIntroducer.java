@@ -73,8 +73,6 @@ public class DefinerIntroducer {
 
 	private List<Formula> introduceDefiners(AtomicConcept concept, Formula formula) {
 
-		System.out.println("formula = " + formula);
-
 		List<Formula> output_list = new ArrayList<>();
 		FChecker fc = new FChecker();
 
@@ -317,7 +315,7 @@ public class DefinerIntroducer {
 
 		} else if (A_subsumee == 0 && A_subsumer == 1) {
 
-			System.out.println("A_subsumee == 0 && A_subsumer == 1");
+			//System.out.println("A_subsumee == 0 && A_subsumer == 1");
 
 			if (subsumer instanceof Exists) {
 
@@ -449,7 +447,7 @@ public class DefinerIntroducer {
 
 							if (definer_right_map.get(filler) == null) {
 								AtomicConcept definer = new AtomicConcept(
-										"Definer_" + AtomicConcept.getDefiner_index());
+										"Definer" + AtomicConcept.getDefiner_index());
 								AtomicConcept.setDefiner_index(AtomicConcept.getDefiner_index() + 1);
 								definer_set.add(definer);
 								// owldefiner_set.add(bc.getClassfromConcept(definer));
@@ -1490,7 +1488,6 @@ public class DefinerIntroducer {
 			output_list.add(formula);
 		}
 
-		System.out.println("after definer = " + output_list);
 		return output_list;
 	}
 
