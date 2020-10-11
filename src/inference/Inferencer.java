@@ -16,6 +16,7 @@ import roles.TopRole;
 import connectives.And;
 import connectives.Exists;
 import connectives.Forall;
+import connectives.Inclusion;
 import connectives.Negation;
 import connectives.Or;
 import formula.Formula;
@@ -62,7 +63,7 @@ public class Inferencer {
 			
 			Formula subsumee = formula.getSubFormulas().get(0);
 			Formula subsumer = formula.getSubFormulas().get(1);
-			System.out.println("formula = " + formula);
+			//System.out.println("formula = " + formula);
 			
 			if (!ec.isPresent(concept, formula)) {
 				output_list.add(formula);
@@ -91,23 +92,25 @@ public class Inferencer {
 			}
 		}
 		//System.out.println("=====================================================");
-		/*System.out.println("positive_star_premises = " + positive_star_premises);
-		System.out.println("positive_exists_premises = " + positive_exists_premises);
-		System.out.println("positive_exists_disjunction_premises = " + positive_exists_disjunction_premises);
-		System.out.println("positive_forall_premises = " + positive_forall_premises.size());
-		System.out.println("positive_forall_disjunction_premises = " + positive_forall_disjunction_premises);
-		System.out.println("negative_star_premises = " + negative_star_premises);
-		System.out.println("negative_exists_premises = " + negative_exists_premises);
-		System.out.println("negative_exists_disjunction_premises = " + negative_exists_disjunction_premises);
-		System.out.println("negative_forall_premises = " + negative_forall_premises.size());
-		System.out.println("negative_forall_disjunction_premises = " + negative_forall_disjunction_premises);*/
+		//System.out.println("positive_star_premises = " + positive_star_premises);
+		//System.out.println("positive_exists_premises = " + positive_exists_premises);
+		//System.out.println("positive_exists_disjunction_premises = " + positive_exists_disjunction_premises);
+		//System.out.println("positive_forall_premises = " + positive_forall_premises.size());
+		//System.out.println("positive_forall_disjunction_premises = " + positive_forall_disjunction_premises);
+		//System.out.println("negative_star_premises = " + negative_star_premises);
+		//System.out.println("negative_exists_premises = " + negative_exists_premises);
+		//System.out.println("negative_exists_disjunction_premises = " + negative_exists_disjunction_premises);
+		//System.out.println("negative_forall_premises = " + negative_forall_premises.size());
+		//System.out.println("negative_forall_disjunction_premises = " + negative_forall_disjunction_premises);
 		//
 		//Case I
 		if (!positive_star_premises.isEmpty()) {
 			for (Formula ps_premise : positive_star_premises) {
 				Formula subsumee = ps_premise.getSubFormulas().get(0);
+				System.out.println("subsumee = " + subsumee);
 				if (!negative_star_premises.isEmpty()) {
 					for (Formula ns_premise : negative_star_premises) {
+						//System.out.println("AckermannReplace(concept, ns_premise, subsumee) = " + AckermannReplace(concept, ns_premise, subsumee));
 						output_list.add(AckermannReplace(concept, ns_premise, subsumee));
 					}
 				}
@@ -435,18 +438,12 @@ public class Inferencer {
 		} else if (toBeReplaced instanceof AtomicRole) {
 			return toBeReplaced.equals(role) ? definition : new AtomicRole(toBeReplaced.getText());
 
-		} else if (toBeReplaced instanceof Individual) {
-			return new Individual(toBeReplaced.getText());
-		
-		} else if (toBeReplaced instanceof Negation) {
-			return new Negation(AckermannReplace(role, toBeReplaced.getSubFormulas().get(0), definition));
-
 		} else if (toBeReplaced instanceof Exists) {
 			return new Exists(AckermannReplace(role, toBeReplaced.getSubFormulas().get(0), definition),
 					AckermannReplace(role, toBeReplaced.getSubFormulas().get(1), definition));
 
-		} else if (toBeReplaced instanceof Forall) {
-			return new Forall(AckermannReplace(role, toBeReplaced.getSubFormulas().get(0), definition),
+		} else if (toBeReplaced instanceof Inclusion) {
+			return new Inclusion(AckermannReplace(role, toBeReplaced.getSubFormulas().get(0), definition),
 					AckermannReplace(role, toBeReplaced.getSubFormulas().get(1), definition));
 
 		} else if (toBeReplaced instanceof And) {
@@ -457,20 +454,17 @@ public class Inferencer {
 			}
 			return new And(new_conjunct_list);
 
-		} else if (toBeReplaced instanceof Or) {
-			List<Formula> disjunct_list = toBeReplaced.getSubFormulas();
-			List<Formula> new_disjunct_list = new ArrayList<>();
-			for (Formula disjunct : disjunct_list) {
-				new_disjunct_list.add(AckermannReplace(role, disjunct, definition));
-			}
-			return new Or(new_disjunct_list);
-
 		}
 
 		return toBeReplaced;
 	}
 	
 	public Formula AckermannReplace(AtomicConcept concept, Formula toBeReplaced, Formula definition) {
+		
+		//System.out.println(concept);
+		//System.out.println(toBeReplaced);
+		//System.out.println(definition);
+		
 
 		if (toBeReplaced instanceof AtomicConcept) {
 			return toBeReplaced.equals(concept) ? definition : new AtomicConcept(toBeReplaced.getText());
@@ -480,6 +474,10 @@ public class Inferencer {
 
 		} else if (toBeReplaced instanceof Exists) {
 			return new Exists(AckermannReplace(concept, toBeReplaced.getSubFormulas().get(0), definition),
+					AckermannReplace(concept, toBeReplaced.getSubFormulas().get(1), definition));
+
+		} else if (toBeReplaced instanceof Inclusion) {
+			return new Inclusion(AckermannReplace(concept, toBeReplaced.getSubFormulas().get(0), definition),
 					AckermannReplace(concept, toBeReplaced.getSubFormulas().get(1), definition));
 
 		} else if (toBeReplaced instanceof And) {
