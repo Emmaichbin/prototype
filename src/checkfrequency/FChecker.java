@@ -1,6 +1,8 @@
 package checkfrequency;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import concepts.AtomicConcept;
 import connectives.And;
@@ -37,14 +39,40 @@ public class FChecker {
 					+ positive(concept, formula.getSubFormulas().get(1));
 		} else if (formula instanceof And) {
 			int sum = 0;
-			List<Formula> operand_list = formula.getSubFormulas();
-			for (Formula operand : operand_list) {
-				sum = sum + positive(concept, operand);
+			Set<Formula> conjunct_set = formula.getSubformulae();
+			for (Formula conjunct : conjunct_set) {
+				sum = sum + positive(concept, conjunct);
 			}
 			return sum;
 		}
 
 		return 0;
+	}
+	
+	public static void main(String[] args) {	
+		AtomicConcept a = new AtomicConcept("A");
+		AtomicConcept b = new AtomicConcept("B");
+		AtomicConcept c = new AtomicConcept("C");
+		AtomicRole r = new AtomicRole("r");
+		Exists e = new Exists(r, b);
+		Set<Formula> list1 = new HashSet<>();
+		for (Formula hello : list1) {
+			System.out.println("hello = " + hello);
+		}
+		And and1 = new And(list1);
+		Set<Formula> list2 = new HashSet<>();
+		list2.add(a);
+		list2.add(b);
+		list2.add(e);
+		list2.add(e);
+		list2.add(b);
+		list2.add(c);
+		And and2 = new And(list2);
+		Inclusion inc = new Inclusion(and2, and1);
+		FChecker fc = new FChecker();
+		System.out.println("e.c_sig = " + inc);
+		System.out.println("e.c_sig = " + fc.negative(b, inc));
+		System.out.println("e.c_sig = " + fc.positive(b, inc));
 	}
 
 	public int negative(AtomicConcept concept, List<Formula> formula_list) {
@@ -67,9 +95,9 @@ public class FChecker {
 					+ negative(concept, formula.getSubFormulas().get(1));
 		} else if (formula instanceof And) {
 			int sum = 0;
-			List<Formula> operand_list = formula.getSubFormulas();
-			for (Formula operand : operand_list) {
-				sum = sum + negative(concept, operand);
+			Set<Formula> conjunct_set = formula.getSubformulae();
+			for (Formula conjunct : conjunct_set) {
+				sum = sum + negative(concept, conjunct);
 			}
 			return sum;
 		}
@@ -98,9 +126,9 @@ public class FChecker {
 			return negative(role, formula.getSubFormulas().get(0)) + positive(role, formula.getSubFormulas().get(1));
 		} else if (formula instanceof And) {
 			int sum = 0;
-			List<Formula> operand_list = formula.getSubFormulas();
-			for (Formula operand : operand_list) {
-				sum = sum + positive(role, operand);
+			Set<Formula> conjunct_set = formula.getSubformulae();
+			for (Formula conjunct : conjunct_set) {
+				sum = sum + positive(role, conjunct);
 			}
 			return sum;
 		}
@@ -128,9 +156,9 @@ public class FChecker {
 					+ negative(role, formula.getSubFormulas().get(1));
 		} else if (formula instanceof And) {
 			int sum = 0;
-			List<Formula> operand_list = formula.getSubFormulas(); 
-			for (Formula operand : operand_list) {
-				sum = sum + negative(role, operand);
+			Set<Formula> conjunct_set = formula.getSubformulae(); 
+			for (Formula conjunct : conjunct_set) {
+				sum = sum + negative(role, conjunct);
 			}
 			return sum;
 		}

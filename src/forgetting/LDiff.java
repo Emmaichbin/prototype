@@ -16,6 +16,7 @@ import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClass;
+import org.semanticweb.owlapi.model.OWLLogicalAxiom;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration;
@@ -59,13 +60,16 @@ public class LDiff {
 
 		Set<AtomicRole> role_set = ct.getRolesfromObjectProperties(r_sig);
 		Set<AtomicConcept> concept_set = ct.getConceptsfromClasses(c_sig);
-		List<Formula> formula_list = ct.OntologyConverter(onto_2);
+		
+		Set<OWLLogicalAxiom> owlAxiom_set = Sets.difference(onto_2.getLogicalAxioms(), onto_1.getLogicalAxioms());
+		
+		List<Formula> formula_list = ct.AxiomsConverter(owlAxiom_set);
 
 		System.out.println("The forgetting task is to eliminate [" + concept_set.size() + "] concept names and ["
 				+ role_set.size() + "] role names from [" + formula_list.size() + "] normalized axioms");
 
 		long startTime_1 = System.currentTimeMillis();
-		Set<OWLAxiom> uniform_interpolant = bc.toOWLAxioms(forgetter.Forgetting(role_set, concept_set, formula_list));
+		Set<OWLAxiom> uniform_interpolant = bc.toOWLAxioms(forgetter.Forgetting(role_set, concept_set, formula_list, onto_2));
 		System.out.println("ui size = " + uniform_interpolant.size());
 		long endTime_1 = System.currentTimeMillis();
 		System.out.println("Forgetting Duration = " + (endTime_1 - startTime_1) + " millis");
@@ -183,8 +187,8 @@ public class LDiff {
 		String filePath3 = sc3.next();
 		
 		long startTime1 = System.currentTimeMillis(); LDiff diff = new LDiff();
-		diff.compute_LDiff(onto_1, onto_2, filePath3); long endTime1 =
-		System.currentTimeMillis();
+		diff.compute_LDiff(onto_1, onto_2, filePath3); 
+		long endTime1 = System.currentTimeMillis();
 		
 		System.out.println("Total Duration = " + (endTime1 - startTime1) + "millis");
 

@@ -5,9 +5,14 @@
  */
 package connectives;
 
-import java.util.HashSet;
+import java.util.Set;
+
+import com.google.common.collect.Sets;
+
+import concepts.AtomicConcept;
 import concepts.ConceptExpression;
 import formula.Formula;
+import roles.AtomicRole;
 
 public class Exists extends ConceptExpression {
 
@@ -17,13 +22,13 @@ public class Exists extends ConceptExpression {
 
 	public Exists(Formula role, Formula filler) {
 		super(role, filler);
-		this.c_sig = new HashSet<>();
+		/*this.c_sig = new HashSet<>();
 		this.r_sig = new HashSet<>();
 		this.set_c_sig(filler.get_c_sig());
 		this.set_r_sig(role.get_r_sig());
-		this.set_r_sig(filler.get_r_sig());
+		this.set_r_sig(filler.get_r_sig());*/
 	}
-	/*
+	
 	public Set<AtomicConcept> get_c_sig() {	
 		Formula filler = this.getSubFormulas().get(1);
 		return filler.get_c_sig();
@@ -33,7 +38,7 @@ public class Exists extends ConceptExpression {
 		Formula role = this.getSubFormulas().get(0);
 		Formula filler = this.getSubFormulas().get(1);
 		return Sets.union(role.get_r_sig(), filler.get_r_sig());
-	}*/
+	}
 
 	@Override
 	public String toString() {

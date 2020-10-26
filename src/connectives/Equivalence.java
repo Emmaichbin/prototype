@@ -5,8 +5,13 @@
  */
 package connectives;
 
-import java.util.HashSet;
+import java.util.Set;
+
+import com.google.common.collect.Sets;
+
+import concepts.AtomicConcept;
 import formula.Formula;
+import roles.AtomicRole;
 
 /**
  *
@@ -21,25 +26,25 @@ public class Equivalence extends Formula {
 	public Equivalence(Formula lefthand, Formula righthand) {
 		super(2);
 		this.setSubFormulas(lefthand, righthand);
-		this.c_sig = new HashSet<>();
+		/*this.c_sig = new HashSet<>();
 		this.r_sig = new HashSet<>();
 		this.set_c_sig(lefthand.get_c_sig());
 		this.set_c_sig(righthand.get_c_sig());
 		this.set_r_sig(lefthand.get_r_sig());
-		this.set_r_sig(righthand.get_r_sig());
+		this.set_r_sig(righthand.get_r_sig());*/
 	}
-	/*
+	
 	public Set<AtomicConcept> get_c_sig() {	
-		Formula subsumee = this.getSubFormulas().get(0);
-		Formula subsumer = this.getSubFormulas().get(1);
-		return Sets.union(subsumee.get_c_sig(), subsumer.get_c_sig());
+		Formula lefthand = this.getSubFormulas().get(0);
+		Formula righthand = this.getSubFormulas().get(1);
+		return Sets.union(lefthand.get_c_sig(), righthand.get_c_sig());
 	}
 	
 	public Set<AtomicRole> get_r_sig() {
-		Formula subsumee = this.getSubFormulas().get(0);
-		Formula subsumer = this.getSubFormulas().get(1);
-		return Sets.union(subsumee.get_r_sig(), subsumer.get_r_sig());
-	}*/
+		Formula lefthand = this.getSubFormulas().get(0);
+		Formula righthand = this.getSubFormulas().get(1);
+		return Sets.union(lefthand.get_r_sig(), righthand.get_r_sig());
+	}
 
 	@Override
 	public String toString() {

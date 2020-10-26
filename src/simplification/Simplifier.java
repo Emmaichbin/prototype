@@ -26,7 +26,7 @@ public class Simplifier {
 
 	}
 				
-	public List<Formula> getSimplifiedForm(List<Formula> input_list) throws CloneNotSupportedException {
+	/*public List<Formula> getSimplifiedForm(List<Formula> input_list) throws CloneNotSupportedException {
 
 		List<Formula> output_list = new ArrayList<>();
 
@@ -127,7 +127,7 @@ public class Simplifier {
 		}
 
 		return formula;
-	}
+	}*/
 	
 	/*private Formula simplified_2(Formula formula) {
 
@@ -161,7 +161,7 @@ public class Simplifier {
 	}*/
 	
 	// And(A,B,A)=And(A,B)
-	private Formula simplified_2(Formula formula) {
+	/*private Formula simplified_2(Formula formula) {
 
 		if (formula instanceof Negation) {
 			formula.getSubFormulas().set(0, simplified_2(formula.getSubFormulas().get(0)));
@@ -251,7 +251,7 @@ public class Simplifier {
 
 	// And(A,B,~A)=false, Or(A,B,~A)=true
 	
-	public List<Formula> getNNF(List<Formula> input_list) {
+	/*public List<Formula> getNNF(List<Formula> input_list) {
 
 		List<Formula> output_list = new ArrayList<>();
 
@@ -327,18 +327,12 @@ public class Simplifier {
 		for (Formula formula : input_list) {
 			output_list.addAll(getCNF(formula));
 		}
-		
-		/*int i = 1;
-		for (Formula formula : output_list) {
-			System.out.println("formula[" + i + "] = " + formula);
-		}*/
-
 		return output_list;
 	}
 	
-	static int i = 0;
+	static int i = 0; */
 
-	public List<Formula> getCNF(Formula formula) {
+	/*public List<Formula> getCNF(Formula formula) {
 
 		EChecker ec = new EChecker();
 		
@@ -474,6 +468,6 @@ public class Simplifier {
 		}
 		
 		return null;
-	}
+	}*/
 
 }

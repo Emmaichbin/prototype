@@ -1,26 +1,28 @@
 package inference;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-
+//import org.semanticweb.elk.owlapi.ElkReasonerFactory;
+import org.semanticweb.HermiT.Reasoner;
+import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLOntology;
+//import org.semanticweb.owlapi.reasoner.InferenceType;
+import org.semanticweb.owlapi.reasoner.OWLReasoner;
+//import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
 
 import checkexistence.EChecker;
 import checkfrequency.FChecker;
 import concepts.AtomicConcept;
-import concepts.BottomConcept;
 import concepts.TopConcept;
 import roles.AtomicRole;
-import roles.BottomRole;
-import roles.TopRole;
 import connectives.And;
 import connectives.Exists;
-import connectives.Forall;
 import connectives.Inclusion;
-import connectives.Negation;
-import connectives.Or;
+import convertion.BackConverter;
 import formula.Formula;
-import individual.Individual;
 
 public class Inferencer {
 	
@@ -36,7 +38,7 @@ public class Inferencer {
 
 	}
 	
-	public List<Formula> combination_A(AtomicConcept concept, List<Formula> formula_list)
+	public List<Formula> combination_A(AtomicConcept concept, List<Formula> formula_list, OWLOntology onto)
 			throws Exception {
 		
 		//System.out.println("onto = " + onto);
@@ -107,10 +109,9 @@ public class Inferencer {
 		if (!positive_star_premises.isEmpty()) {
 			for (Formula ps_premise : positive_star_premises) {
 				Formula subsumee = ps_premise.getSubFormulas().get(0);
-				System.out.println("subsumee = " + subsumee);
+				//System.out.println("subsumee = " + subsumee);
 				if (!negative_star_premises.isEmpty()) {
 					for (Formula ns_premise : negative_star_premises) {
-						//System.out.println("AckermannReplace(concept, ns_premise, subsumee) = " + AckermannReplace(concept, ns_premise, subsumee));
 						output_list.add(AckermannReplace(concept, ns_premise, subsumee));
 					}
 				}
@@ -157,7 +158,7 @@ public class Inferencer {
 		return output_list;
 	}
 	
-	public List<Formula> combination_R(AtomicRole role, List<Formula> formula_list)
+	public List<Formula> combination_R(AtomicRole role, List<Formula> formula_list, OWLOntology onto)
 			throws Exception {
 		
 		//System.out.println("onto = " + onto);
@@ -176,9 +177,13 @@ public class Inferencer {
 		// C or exists r.(~A or B)
 
 		EChecker ec = new EChecker();
+		BackConverter bc = new BackConverter();
+		OWLReasoner reasoner = new Reasoner.ReasonerFactory().createReasoner(onto);
+		//OWLReasonerFactory reasonerFactory = new ElkReasonerFactory();
+		//OWLReasoner reasoner = reasonerFactory.createReasoner(onto);
+		//reasoner.precomputeInferences(InferenceType.CLASS_HIERARCHY);
 
 		for (Formula formula : formula_list) {
-			//If concept is not present in formula, then formula is directly put into the output_list. 
 			
 			Formula subsumee = formula.getSubFormulas().get(0);
 			Formula subsumer = formula.getSubFormulas().get(1);
@@ -189,12 +194,12 @@ public class Inferencer {
 			} else if (subsumer.equals(role)) {
 				positive_star_premises.add(formula);
 	
-			} else if (subsumer instanceof Exists && ec.isPresent(role, subsumer)) {
-				positive_exists_premises.add(formula);
-	
 			} else if (subsumee.equals(role)) {
 				negative_star_premises.add(formula);
 
+			} else if (ec.isPresent(role, subsumer)) {
+				positive_exists_premises.add(formula);
+	
 			} else {
 				negative_exists_premises.add(formula);
 			}
@@ -212,171 +217,75 @@ public class Inferencer {
 		System.out.println("negative_forall_disjunction_premises = " + negative_forall_disjunction_premises);*/
 		//
 		//Case I
-		if (!positive_star_premises.isEmpty()) {
-			if (!negative_star_premises.isEmpty()) {
-				for (Formula ps_premise : positive_star_premises) {
-					Formula subsumee = ps_premise.getSubFormulas().get(0);
-					for (Formula ns_premise : negative_star_premises) {
-						output_list.add(AckermannReplace(role, ns_premise, subsumee));
-					}	
-				}			
-			}
-			
-			if (!negative_exists_premises.isEmpty()) {
-				for (Formula ps_premise : positive_star_premises) {
-					Formula subsumee = ps_premise.getSubFormulas().get(0);
-					for (Formula ne_premise : negative_exists_premises) {
-						output_list.add(AckermannReplace(role, ne_premise, subsumee));
-					}	
-				}	
-			}
-		}
+		
+		for (Formula ps_premise : positive_star_premises) {
+			Formula subsumee = ps_premise.getSubFormulas().get(0);
+			for (Formula ns_premise : negative_star_premises) {
+				output_list.add(AckermannReplace(role, ns_premise, subsumee));
+			}	
+			for (Formula ne_premise : negative_exists_premises) {
+				output_list.add(AckermannReplace(role, ne_premise, subsumee));
+			}	
+		}	
 
 		// Case II
-		if (!positive_exists_premises.isEmpty()) {		
-			if (!negative_star_premises.isEmpty()) {
-				for (Formula ns_premise : negative_star_premises) {
-					Formula subsumer = ns_premise.getSubFormulas().get(1);
-					for (Formula pe_premise : positive_exists_premises) {
-						output_list.add(AckermannReplace(role, pe_premise, subsumer));
-					}
-				}				
+		for (Formula ns_premise : negative_star_premises) {
+			Formula subsumer = ns_premise.getSubFormulas().get(1);
+			for (Formula pe_premise : positive_exists_premises) {
+				output_list.add(AckermannReplace(role, pe_premise, subsumer));
 			}
+		}
+		
+		// Case III
+		for (Formula pe_premise : positive_exists_premises) {
+			//System.out.println("test = " + pe_premise);
+			Formula pe_subsumee = pe_premise.getSubFormulas().get(0);
+			Formula pe_subsumer = pe_premise.getSubFormulas().get(1);
+			Formula pe_subsumer_filler = pe_subsumer.getSubFormulas().get(1);
+			for (Formula ne_premise : negative_exists_premises) {
+				Formula ne_subsumee = ne_premise.getSubFormulas().get(0);
+				Formula ne_subsumer = ne_premise.getSubFormulas().get(1);
+				Formula ne_subsumee_filler = null;
+				Formula stored_conjunct = null;
+				if (ne_subsumee instanceof Exists) {
+					ne_subsumee_filler = ne_subsumee.getSubFormulas().get(1);
+				} else {
+					Set<Formula> conjunct_set = ne_subsumee.getSubformulae();
+					for (Formula conjunct : conjunct_set) {
+						if (ec.isPresent(role, conjunct)) {
+							ne_subsumee_filler = conjunct.getSubFormulas().get(1);
+							stored_conjunct = conjunct;
+							break;
+						}
+					}
+				}
+				//OWLClassExpression owl_pe_subsumer_filler = bc.toOWLClassExpression(pe_subsumer_filler);
+				//OWLClassExpression owl_ne_subsumee_filler = bc.toOWLClassExpression(ne_subsumee_filler);
+				Formula inclusion = new Inclusion(pe_subsumer_filler, ne_subsumee_filler);
+				OWLAxiom axiom = bc.toOWLSubClassOfAxiom(inclusion);
+				if (reasoner.isEntailed(axiom)) {
+					Formula new_inclusion = null;
+					if (ne_subsumee instanceof Exists) {
+						new_inclusion = new Inclusion(pe_subsumee, ne_subsumer);
+					} else {
+						Set<Formula> new_conjunct_set = new HashSet<>(ne_subsumee.getSubformulae());
+						new_conjunct_set.remove(stored_conjunct);
+						new_conjunct_set.add(pe_subsumee);
+						Formula new_subsumee = new And(new_conjunct_set);
+						new_inclusion = new Inclusion(new_subsumee, ne_subsumer);
+					} 
+					//System.out.println("Looking forward = " + new_inclusion);
+					output_list.add(new_inclusion);
+				}
+			}	
 		}
 		
 		//System.out.println("The output list of Ackermann_A: " + output_list);
 		return output_list;
 	}
-		
-
 	
-	
-	public List<Formula> AckermannPositive(AtomicConcept concept, List<Formula> input_list) throws CloneNotSupportedException {
 
-		List<Formula> output_list = new ArrayList<>();
-		List<Formula> toBeReplaced_list = new ArrayList<>();
-		List<Formula> toReplace_list = new ArrayList<>();
-
-		FChecker cf = new FChecker();
-
-		for (Formula formula : input_list) {
-			if (cf.positive(concept, formula) == 0) {
-				toBeReplaced_list.add(formula);
-
-			} else {
-				toReplace_list.add(formula);
-			}
-		}
-
-		Formula definition = null;
-		List<Formula> disjunct_list = new ArrayList<>();
-
-		for (Formula toReplace : toReplace_list) {
-			if (toReplace.equals(concept)) {
-				definition = TopConcept.getInstance();
-				break;
-				
-			} else {
-				List<Formula> other_list = new ArrayList<>(toReplace.getSubFormulas());
-				other_list.remove(concept);
-				if (other_list.size() == 1) {
-					disjunct_list.add(new Negation(other_list.get(0)));
-					continue;
-				} else {
-					disjunct_list.add(new Negation(new Or(other_list)));
-					continue;
-				}
-			}
-		}
-
-		if (definition != TopConcept.getInstance()) {
-			if (disjunct_list.size() == 1) {
-				definition = disjunct_list.get(0);
-			} else {
-				definition = new Or(disjunct_list);
-			}
-		}
-
-		for (Formula toBeReplaced : toBeReplaced_list) {
-			output_list.add(AckermannReplace(concept, toBeReplaced, definition));
-		}
-
-		return output_list;
-	}
-	
-	public List<Formula> AckermannNegative(AtomicConcept concept, List<Formula> input_list)
-			throws CloneNotSupportedException {
-		
-		List<Formula> output_list = new ArrayList<>();
-		List<Formula> toBeReplaced_list = new ArrayList<>();
-		List<Formula> toReplace_list = new ArrayList<>();
-
-		FChecker cf = new FChecker();
-
-		for (Formula formula : input_list) {
-			if (cf.negative(concept, formula) == 0) {
-				toBeReplaced_list.add(formula);
-
-			} else {
-				toReplace_list.add(formula);
-			}
-		}
-
-		Formula definition = null;
-		List<Formula> disjunct_list = new ArrayList<>();
-
-		for (Formula toReplace : toReplace_list) {
-			if (toReplace.equals(new Negation(concept))) {
-				definition = BottomConcept.getInstance();
-				break;
-				
-			} else {
-				List<Formula> other_list = new ArrayList<>(toReplace.getSubFormulas());
-				other_list.remove(new Negation(concept));
-				if (other_list.size() == 1) {
-					disjunct_list.add(other_list.get(0));
-					continue;
-				} else {
-					disjunct_list.add(new Or(other_list));
-					continue;
-				}
-			}
-		}
-
-		if (definition != BottomConcept.getInstance()) {
-			if (disjunct_list.size() == 1) {
-				definition = disjunct_list.get(0);
-			} else {
-				definition = new And(disjunct_list);
-			}
-		}
-
-		for (Formula toBeReplaced : toBeReplaced_list) {
-			output_list.add(AckermannReplace(concept, toBeReplaced, definition));
-		}
-
-		return output_list;
-	}
-
-	public List<Formula> PurifyPositive(AtomicRole role, List<Formula> input_list)
-			throws CloneNotSupportedException {
-
-		FChecker cf = new FChecker();
-
-		List<Formula> output_list = new ArrayList<>();
-
-		for (Formula formula : input_list) {
-			if (cf.positive(role, formula) == 0) {
-				output_list.add(formula);
-			} else {
-				output_list.add(PurifyPositive(role, formula));
-			}
-		}
-
-		return output_list;
-	}
-
-	public List<Formula> PurifyPositive(AtomicConcept concept, List<Formula> input_list)
+	public List<Formula> Purify(AtomicConcept concept, List<Formula> input_list)
 			throws CloneNotSupportedException {
 
 		FChecker cf = new FChecker();
@@ -387,47 +296,11 @@ public class Inferencer {
 			if (cf.positive(concept, formula) == 0) {
 				output_list.add(formula);
 			} else {
-				output_list.add(PurifyPositive(concept, formula));
+				output_list.add(Purify(concept, formula));
 			}
 		}
 
 		return output_list;
-	}
-
-	public List<Formula> PurifyNegative(AtomicRole role, List<Formula> input_list)
-			throws CloneNotSupportedException {
-
-		FChecker cf = new FChecker();
-
-		List<Formula> output_list = new ArrayList<>();
-
-		for (Formula formula : input_list) {
-			if (cf.negative(role, formula) == 0) {
-				output_list.add(formula);
-			} else {
-				output_list.add(PurifyNegative(role, formula));
-			}
-		}
-
-		return output_list;
-	}
-
-	public List<Formula> PurifyNegative(AtomicConcept concept, List<Formula> inputList)
-			throws CloneNotSupportedException {
-
-		FChecker cf = new FChecker();
-
-		List<Formula> outputList = new ArrayList<>();
-
-		for (Formula formula : inputList) {
-			if (cf.negative(concept, formula) == 0) {
-				outputList.add(formula);
-			} else {
-				outputList.add(PurifyNegative(concept, formula));
-			}
-		}
-
-		return outputList;
 	}
 
 	public Formula AckermannReplace(AtomicRole role, Formula toBeReplaced, Formula definition) {
@@ -447,12 +320,12 @@ public class Inferencer {
 					AckermannReplace(role, toBeReplaced.getSubFormulas().get(1), definition));
 
 		} else if (toBeReplaced instanceof And) {
-			List<Formula> conjunct_list = toBeReplaced.getSubFormulas();
-			List<Formula> new_conjunct_list = new ArrayList<>();
+			Set<Formula> conjunct_list = toBeReplaced.getSubformulae();
+			Set<Formula> conjunct_set = new HashSet<>();
 			for (Formula conjunct : conjunct_list) {
-				new_conjunct_list.add(AckermannReplace(role, conjunct, definition));
+				conjunct_set.add(AckermannReplace(role, conjunct, definition));
 			}
-			return new And(new_conjunct_list);
+			return new And(conjunct_set);
 
 		}
 
@@ -481,103 +354,37 @@ public class Inferencer {
 					AckermannReplace(concept, toBeReplaced.getSubFormulas().get(1), definition));
 
 		} else if (toBeReplaced instanceof And) {
-			List<Formula> conjunct_list = toBeReplaced.getSubFormulas();
-			List<Formula> new_conjunct_list = new ArrayList<>();
+			Set<Formula> conjunct_list = toBeReplaced.getSubformulae();
+			Set<Formula> conjunct_set = new HashSet<>();
 			for (Formula conjunct : conjunct_list) {
-				new_conjunct_list.add(AckermannReplace(concept, conjunct, definition));
+				conjunct_set.add(AckermannReplace(concept, conjunct, definition));
 			}
-			return new And(new_conjunct_list);
+			return new And(conjunct_set);
 			
 		} 
 		
 		return toBeReplaced;
 	}
 	
-	public Formula PurifyPositive(AtomicRole role, Formula formula) {
+	public static void main(String[] args) {	
+		AtomicConcept a = new AtomicConcept("A");
+		AtomicConcept b = new AtomicConcept("B");
+		AtomicConcept c = new AtomicConcept("C");
+		AtomicRole r = new AtomicRole("r");
+		Exists e = new Exists(r, b);
+		Set<Formula> list = new HashSet<>();
+		list.add(a);
+		list.add(c);
+		And and = new And(list);
+		Inclusion inc = new Inclusion(e, and);
+		FChecker fc = new FChecker();
+		System.out.println("e.c_sig = " + fc.negative(b, inc));
+		Inferencer inf = new Inferencer();
+		System.out.println("e.c_sig = " + inf.Purify(b, inc));
 		
-		if (formula instanceof AtomicConcept) {
-			return new AtomicConcept(formula.getText());
-		
-		} else if (formula instanceof AtomicRole) {
-			return formula.equals(role) ? TopRole.getInstance() : new AtomicRole(formula.getText());
-		
-		} else if (formula instanceof Individual) {
-			return new Individual(formula.getText());
-		
-		} else if (formula instanceof Negation) {
-			return new Negation(PurifyPositive(role, formula.getSubFormulas().get(0)));
-			
-		} else if (formula instanceof Exists) {
-			return new Exists(PurifyPositive(role, formula.getSubFormulas().get(0)),
-					PurifyPositive(role, formula.getSubFormulas().get(1)));
-		
-		} else if (formula instanceof Forall) {
-			return new Forall(PurifyPositive(role, formula.getSubFormulas().get(0)),
-					PurifyPositive(role, formula.getSubFormulas().get(1)));
-			
-		} else if (formula instanceof And) {
-			List<Formula> conjunct_list = formula.getSubFormulas();
-			List<Formula> new_conjunct_list = new ArrayList<>();
-			for (Formula conjunct : conjunct_list) {
-				new_conjunct_list.add(PurifyPositive(role, conjunct));
-			}
-			return new And(new_conjunct_list);
-			
-		} else if (formula instanceof Or) {
-			List<Formula> disjunct_list = formula.getSubFormulas();
-			List<Formula> new_disjunct_list = new ArrayList<>();
-			for (Formula disjunct : disjunct_list) {
-				new_disjunct_list.add(PurifyPositive(role, disjunct));
-			}
-			return new Or(new_disjunct_list);
-		}
-
-		return formula;
 	}
 	
-	public Formula PurifyNegative(AtomicRole role, Formula formula) {
-		
-		if (formula instanceof AtomicConcept) {
-			return new AtomicConcept(formula.getText());
-		
-		} else if (formula instanceof AtomicRole) {
-			return formula.equals(role) ? BottomRole.getInstance() : new AtomicRole(formula.getText());
-		
-		} else if (formula instanceof Individual) {
-			return new Individual(formula.getText());
-		
-		} else if (formula instanceof Negation) {
-			return new Negation(PurifyNegative(role, formula.getSubFormulas().get(0)));
-			
-		} else if (formula instanceof Exists) {
-			return new Exists(PurifyNegative(role, formula.getSubFormulas().get(0)),
-					PurifyNegative(role, formula.getSubFormulas().get(1)));
-		
-		} else if (formula instanceof Forall) {
-			return new Forall(PurifyNegative(role, formula.getSubFormulas().get(0)),
-					PurifyNegative(role, formula.getSubFormulas().get(1)));
-			
-		} else if (formula instanceof And) {
-			List<Formula> conjunct_list = formula.getSubFormulas();
-			List<Formula> new_conjunct_list = new ArrayList<>();
-			for (Formula conjunct : conjunct_list) {
-				new_conjunct_list.add(PurifyNegative(role, conjunct));
-			}
-			return new And(new_conjunct_list);
-			
-		} else if (formula instanceof Or) {
-			List<Formula> disjunct_list = formula.getSubFormulas();
-			List<Formula> new_disjunct_list = new ArrayList<>();
-			for (Formula disjunct : disjunct_list) {
-				new_disjunct_list.add(PurifyNegative(role, disjunct));
-			}
-			return new Or(new_disjunct_list);
-		}
-
-		return formula;
-	}
-	
-	public Formula PurifyPositive(AtomicConcept concept, Formula formula) {
+	public Formula Purify(AtomicConcept concept, Formula formula) {
 
 		if (formula instanceof AtomicConcept) {
 			return formula.equals(concept) ? TopConcept.getInstance() : new AtomicConcept(formula.getText());
@@ -585,77 +392,22 @@ public class Inferencer {
 		} else if (formula instanceof AtomicRole) {
 			return new AtomicRole(formula.getText());
 
-		} else if (formula instanceof Individual) {
-			return new Individual(formula.getText());
-		
-		} else if (formula instanceof Negation) {
-			return new Negation(PurifyPositive(concept, formula.getSubFormulas().get(0)));
-			
 		} else if (formula instanceof Exists) {
-			return new Exists(PurifyPositive(concept, formula.getSubFormulas().get(0)),
-					PurifyPositive(concept, formula.getSubFormulas().get(1)));
+			return new Exists(Purify(concept, formula.getSubFormulas().get(0)),
+					Purify(concept, formula.getSubFormulas().get(1)));
 		
-		} else if (formula instanceof Forall) {
-			return new Forall(PurifyPositive(concept, formula.getSubFormulas().get(0)),
-					PurifyPositive(concept, formula.getSubFormulas().get(1)));
-			
-		} else if (formula instanceof And) {
-			List<Formula> conjunct_list = formula.getSubFormulas();
-			List<Formula> new_conjunct_list = new ArrayList<>();
-			for (Formula conjunct : conjunct_list) {
-				new_conjunct_list.add(PurifyPositive(concept, conjunct));
-			}
-			return new And(new_conjunct_list);
-			
-		} else if (formula instanceof Or) {
-			List<Formula> disjunct_list = formula.getSubFormulas();
-			List<Formula> new_disjunct_list = new ArrayList<>();
-			for (Formula disjunct : disjunct_list) {
-				new_disjunct_list.add(PurifyPositive(concept, disjunct));
-			}
-			return new Or(new_disjunct_list);
-		}
-
-		return formula;
-	}
-			
-	public Formula PurifyNegative(AtomicConcept concept, Formula formula) {
-
-		if (formula instanceof AtomicConcept) {
-			return formula.equals(concept) ? BottomConcept.getInstance() : new AtomicConcept(formula.getText());
-
-		} else if (formula instanceof AtomicRole) {
-			return new AtomicRole(formula.getText());
-
-		} else if (formula instanceof Individual) {
-			return new Individual(formula.getText());
+		} else if (formula instanceof Inclusion) {
+			return new Inclusion(Purify(concept, formula.getSubFormulas().get(0)),
+					Purify(concept, formula.getSubFormulas().get(1)));
 		
-		} else if (formula instanceof Negation) {
-			return new Negation(PurifyNegative(concept, formula.getSubFormulas().get(0)));
-			
-		} else if (formula instanceof Exists) {
-			return new Exists(PurifyNegative(concept, formula.getSubFormulas().get(0)),
-					PurifyNegative(concept, formula.getSubFormulas().get(1)));
-
-		} else if (formula instanceof Forall) {
-			return new Forall(PurifyNegative(concept, formula.getSubFormulas().get(0)),
-					PurifyNegative(concept, formula.getSubFormulas().get(1)));
-
 		} else if (formula instanceof And) {
-			List<Formula> conjunct_list = formula.getSubFormulas();
-			List<Formula> new_conjunct_list = new ArrayList<>();
+			Set<Formula> conjunct_list = formula.getSubformulae();
+			Set<Formula> conjunct_set = new HashSet<>();
 			for (Formula conjunct : conjunct_list) {
-				new_conjunct_list.add(PurifyNegative(concept, conjunct));
+				conjunct_set.add(Purify(concept, conjunct));
 			}
-			return new And(new_conjunct_list);
-
-		} else if (formula instanceof Or) {
-			List<Formula> disjunct_list = formula.getSubFormulas();
-			List<Formula> new_disjunct_list = new ArrayList<>();
-			for (Formula disjunct : disjunct_list) {
-				new_disjunct_list.add(PurifyNegative(concept, disjunct));
-			}
-			return new Or(new_disjunct_list);
+			return new And(conjunct_set);
+			
 		}
 
 		return formula;

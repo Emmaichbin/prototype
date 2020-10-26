@@ -13,6 +13,7 @@ import connectives.Inclusion;
 import roles.AtomicRole;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -25,6 +26,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 public class Formula {
 
 	private List<Formula> subformulas;
+	private Set<Formula> subformulae;
 	protected Set<AtomicConcept> c_sig;
 	protected Set<AtomicRole> r_sig;
 	private String text;
@@ -76,6 +78,10 @@ public class Formula {
 	public List<Formula> getSubFormulas() {
 		return this.subformulas;
 	}
+	
+	public Set<Formula> getSubformulae() {
+		return subformulae;
+	}
 
 	public void setSubFormulas(Formula formula) {
 		this.subformulas.add(formula);
@@ -88,6 +94,10 @@ public class Formula {
 
 	public void setSubFormulas(List<Formula> list) {
 		this.subformulas.addAll(list);
+	}
+
+	public void setSubformulae(Set<Formula> subformulae) {
+		this.subformulae = subformulae;
 	}
 
 	@Override
@@ -142,11 +152,11 @@ public class Formula {
 
 		} else if (this instanceof And) {
 			List<Formula> conjunct_list = this.getSubFormulas();
-			List<Formula> new_conjunct_list = new ArrayList<>();
+			Set<Formula> conjunct_set = new HashSet<>();
 			for (Formula conjunct : conjunct_list) {
-				new_conjunct_list.add(conjunct.clone());
+				conjunct_set.add(conjunct.clone());
 			}
-			return new And(new_conjunct_list);
+			return new And(conjunct_set);
 			
 		}
 

@@ -27,8 +27,6 @@ import concepts.TopConcept;
 import connectives.And;
 import connectives.Exists;
 import connectives.Inclusion;
-import connectives.Negation;
-import connectives.Or;
 import formula.Formula;
 import individual.Individual;
 import roles.AtomicRole;
@@ -114,41 +112,6 @@ public class BackConverter {
 
 		if (formula instanceof Inclusion) {
 			return formula;
-
-		} else if (formula instanceof Or) {
-			List<Formula> negative_list = new ArrayList<>();
-			List<Formula> positive_list = new ArrayList<>();
-			List<Formula> disjunct_list = formula.getSubFormulas();
-			for (Formula disjunct : disjunct_list) {
-				if (disjunct instanceof Negation) {
-					negative_list.add(disjunct.getSubFormulas().get(0));
-				} else {
-					positive_list.add(disjunct);
-				}
-			}
-
-			Formula lefthand = null;
-			if (negative_list.isEmpty()) {
-				lefthand = TopConcept.getInstance();
-			} else if (negative_list.size() == 1) {
-				lefthand = negative_list.get(0);
-			} else {
-				lefthand = new And(negative_list);
-			}
-
-			Formula righthand = null;
-			if (positive_list.isEmpty()) {
-				righthand = BottomConcept.getInstance();
-			} else if (positive_list.size() == 1) {
-				righthand = positive_list.get(0);
-			} else {
-				righthand = new Or(positive_list);
-			}
-
-			return new Inclusion(lefthand, righthand);
-
-		} else if (formula instanceof Negation) {
-			return new Inclusion(formula.getSubFormulas().get(0), BottomConcept.getInstance());
 
 		} else {
 			return new Inclusion(TopConcept.getInstance(), formula);
@@ -514,8 +477,8 @@ public class BackConverter {
 					toOWLClassExpression(formula.getSubFormulas().get(1)));
 		} else if (formula instanceof And) {
 			Set<OWLClassExpression> conjunct_set = new HashSet<>();
-			List<Formula> conjunct_list = formula.getSubFormulas();
-			for (Formula conjunct : conjunct_list) {
+			Set<Formula> new_conjunct_set = formula.getSubformulae();
+			for (Formula conjunct : new_conjunct_set) {
 				conjunct_set.add(toOWLClassExpression(conjunct));
 			}
 			return factory.getOWLObjectIntersectionOf(conjunct_set);
@@ -530,11 +493,7 @@ public class BackConverter {
 		//System.out.println("role = " + role);
 		//System.out.println("role class = " + role.getClass());
 
-		if (role == TopRole.getInstance()) {
-			return factory.getOWLTopObjectProperty();
-		} else if (role == BottomRole.getInstance()) {
-			return factory.getOWLBottomObjectProperty();
-		} else if (role instanceof AtomicRole) {
+        if (role instanceof AtomicRole) {
 		    return factory.getOWLObjectProperty(IRI.create(role.getText()));
 		}
 

@@ -5,13 +5,13 @@
  */
 package connectives;
 
-import concepts.ConceptExpression;
 import formula.Formula;
-import individual.Individual;
-import roles.RoleExpression;
+import roles.AtomicRole;
 
 import java.util.HashSet;
-import java.util.List;
+import java.util.Set;
+
+import concepts.AtomicConcept;
 
 /**
  *
@@ -23,38 +23,50 @@ public class And extends Formula {
 		super();
 	}
 	
-	public And(List<Formula> list) {
-		super(list.size());
-		this.setSubFormulas(list);
-		this.c_sig = new HashSet<>();
+	public And(Set<Formula> set) {
+		super(set.size());
+		this.setSubformulae(set);
+		/*this.c_sig = new HashSet<>();
 		this.r_sig = new HashSet<>();
-		for (Formula conjunct : list) {
+		for (Formula conjunct : set) {
 			this.set_c_sig(conjunct.get_c_sig());
 			this.set_r_sig(conjunct.get_r_sig());	
-		}
+		}*/
 	}
 
-	/*
 	public Set<AtomicConcept> get_c_sig() {
-		List<Formula> conjunct_list = this.getSubFormulas();
+		Set<Formula> conjunct_set = this.getSubformulae();
 		Set<AtomicConcept> ac_set = new HashSet<>();
-		for (Formula conjunct : conjunct_list) {
+		for (Formula conjunct : conjunct_set) {
 			ac_set.addAll(conjunct.get_c_sig());
 		}
 		return ac_set;
 	}
 	
 	public Set<AtomicRole> get_r_sig() {
-		List<Formula> conjunct_list = this.getSubFormulas();
+		Set<Formula> conjunct_set = this.getSubformulae();
 		Set<AtomicRole> ar_set = new HashSet<>();
-		for (Formula conjunct : conjunct_list) {
+		for (Formula conjunct : conjunct_set) {
 			ar_set.addAll(conjunct.get_r_sig());
 		}
 		return ar_set;
 	}
-*/
+
 	@Override
 	public String toString() {
+		String str = "";
+		int i = 1;
+		for (Formula conjunct : this.getSubformulae()) {
+			if (i == 1) {
+				str = str + conjunct;
+			} else {
+				str = str + " \u2293 " + conjunct;
+			}
+			i++;
+		}
+		return str;
+	}
+	/*public String toString() {
 		if (this.getSubFormulas().size() == 1) {
 			return this.getSubFormulas().get(0).toString();
 		}
@@ -85,5 +97,5 @@ public class And extends Formula {
 			str = str + " \u2293 " + "(" + this.getSubFormulas().get(i) + ")";
 		}
 		return str + "";
-	}
+	}*/
 }

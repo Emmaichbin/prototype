@@ -5,9 +5,10 @@
  */
 package connectives;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Set;
+
+import com.google.common.collect.Sets;
 
 import concepts.AtomicConcept;
 import formula.Formula;
@@ -26,14 +27,14 @@ public class Inclusion extends Formula {
 	public Inclusion(Formula subsumee, Formula subsumer) {
 		super(2);
 		this.setSubFormulas(subsumee, subsumer);
-		this.c_sig = new HashSet<>();
+		/*this.c_sig = new HashSet<>();
 		this.r_sig = new HashSet<>();
 		this.set_c_sig(subsumee.get_c_sig());
 		this.set_c_sig(subsumer.get_c_sig());
 		this.set_r_sig(subsumee.get_r_sig());
-		this.set_r_sig(subsumer.get_r_sig());
+		this.set_r_sig(subsumer.get_r_sig());*/
 	}
-/*	
+	
 	public Set<AtomicConcept> get_c_sig() {	
 		Formula subsumee = this.getSubFormulas().get(0);
 		Formula subsumer = this.getSubFormulas().get(1);
@@ -44,7 +45,7 @@ public class Inclusion extends Formula {
 		Formula subsumee = this.getSubFormulas().get(0);
 		Formula subsumer = this.getSubFormulas().get(1);
 		return Sets.union(subsumee.get_r_sig(), subsumer.get_r_sig());
-	}*/
+	}
 	
 	public static void main(String[] args) {	
 		AtomicConcept a = new AtomicConcept("A");
@@ -52,7 +53,7 @@ public class Inclusion extends Formula {
 		AtomicConcept c = new AtomicConcept("C");
 		AtomicRole r = new AtomicRole("r");
 		Exists e = new Exists(r, b);
-		List<Formula> list = new ArrayList<>();
+		Set<Formula> list = new HashSet<>();
 		list.add(a);
 		list.add(c);
 		And and = new And(list);

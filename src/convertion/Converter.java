@@ -117,8 +117,41 @@ public class Converter {
 				Formula subsumer = formula.getSubFormulas().get(1);
 				if (subsumer instanceof And) {
 					Formula subsumee = formula.getSubFormulas().get(0);
-					List<Formula> conjunct_list = subsumer.getSubFormulas();
-					for (Formula conjunct : conjunct_list) {
+					Set<Formula> conjunct_set = subsumer.getSubformulae();
+					for (Formula conjunct : conjunct_set) {
+						Formula inclusion = new Inclusion(subsumee, conjunct);
+						formula_list.add(inclusion);
+					}
+					
+				} else {
+					formula_list.add(formula);
+				}
+			}
+			//formula_list.addAll(temp_list);
+		}
+		
+		long endTime1 = System.currentTimeMillis();
+		
+		System.out.println("Convertion Duration = " + (endTime1 - startTime1) + " millis");
+
+		return formula_list;
+	}
+	
+	public List<Formula> AxiomsConverter(Set<OWLLogicalAxiom> owlAxiom_set) {
+
+		List<Formula> formula_list = new ArrayList<>();
+		
+		long startTime1 = System.currentTimeMillis();
+		
+		for (OWLAxiom owlAxiom : owlAxiom_set) {
+			List<Formula> temp_list = AxiomConverter(owlAxiom);
+			for (Formula formula : temp_list) {
+				Formula subsumer = formula.getSubFormulas().get(1);
+				if (subsumer instanceof And) {
+					//System.out.println("formula = " + formula);
+					Formula subsumee = formula.getSubFormulas().get(0);
+					Set<Formula> conjunct_set = subsumer.getSubformulae();
+					for (Formula conjunct : conjunct_set) {
 						Formula inclusion = new Inclusion(subsumee, conjunct);
 						formula_list.add(inclusion);
 					}
@@ -138,22 +171,16 @@ public class Converter {
 	}
 	
 	
-	public List<Formula> AxiomsConverter(Set<OWLAxiom> owlAxiom_set) {
+	/*public List<Formula> AxiomsConverter(Set<OWLAxiom> owlAxiom_set) {
 
 		List<Formula> formula_list = new ArrayList<>();
 
 		for (OWLAxiom owlAxiom : owlAxiom_set) {
 			formula_list.addAll(AxiomConverter(owlAxiom));
 		}
-		
-		for (Formula formula : formula_list) {
-			System.out.println("formula = " + formula);
-			System.out.println("formula.c_sig = " + formula.get_c_sig());
-			System.out.println("formula.r_sig = " + formula.get_r_sig());
-		}
 
 		return formula_list;
-	}
+	}*/
 	
 		
 	public List<Formula> AxiomConverter(OWLAxiom axiom) {
@@ -220,11 +247,11 @@ public class Converter {
 
 		} else if (concept instanceof OWLObjectIntersectionOf) {
 			OWLObjectIntersectionOf owlOIO = (OWLObjectIntersectionOf) concept;
-			List<Formula> conjunct_list = new ArrayList<>();
+			Set<Formula> conjunct_set = new HashSet<>();
 			for (OWLClassExpression conjunct : owlOIO.getOperands()) {
-				conjunct_list.add(ClassExpressionConverter(conjunct));
+				conjunct_set.add(ClassExpressionConverter(conjunct));
 			}
-			return new And(conjunct_list);
+			return new And(conjunct_set);
 
 		} 
 
