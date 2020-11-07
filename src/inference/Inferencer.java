@@ -5,13 +5,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-//import org.semanticweb.elk.owlapi.ElkReasonerFactory;
+import org.semanticweb.elk.owlapi.ElkReasonerFactory;
 import org.semanticweb.HermiT.Reasoner;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLOntology;
-//import org.semanticweb.owlapi.reasoner.InferenceType;
+import org.semanticweb.owlapi.reasoner.InferenceType;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
-//import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
+import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
 
 import checkexistence.EChecker;
 import checkfrequency.FChecker;
@@ -41,9 +41,6 @@ public class Inferencer {
 	public List<Formula> combination_A(AtomicConcept concept, List<Formula> formula_list, OWLOntology onto)
 			throws Exception {
 		
-		//System.out.println("onto = " + onto);
-		
-		//System.out.println("combine formula_list = " + formula_list);
 		List<Formula> output_list = new ArrayList<>();
 				
 		// C or A
@@ -180,8 +177,9 @@ public class Inferencer {
 		BackConverter bc = new BackConverter();
 		OWLReasoner reasoner = new Reasoner.ReasonerFactory().createReasoner(onto);
 		//OWLReasonerFactory reasonerFactory = new ElkReasonerFactory();
-		//OWLReasoner reasoner = reasonerFactory.createReasoner(onto);
+	   // OWLReasoner reasoner = reasonerFactory.createReasoner(onto);
 		//reasoner.precomputeInferences(InferenceType.CLASS_HIERARCHY);
+		
 
 		for (Formula formula : formula_list) {
 			
@@ -238,11 +236,15 @@ public class Inferencer {
 		
 		// Case III
 		for (Formula pe_premise : positive_exists_premises) {
-			//System.out.println("test = " + pe_premise);
+			//System.out.println("=========================================================");
+			//System.out.println("pe_premise = " + pe_premise);
+			//System.out.println("=========================================================");
 			Formula pe_subsumee = pe_premise.getSubFormulas().get(0);
 			Formula pe_subsumer = pe_premise.getSubFormulas().get(1);
 			Formula pe_subsumer_filler = pe_subsumer.getSubFormulas().get(1);
 			for (Formula ne_premise : negative_exists_premises) {
+				//System.out.println("ne_premise = " + ne_premise);
+				//System.out.println("=========================================================");
 				Formula ne_subsumee = ne_premise.getSubFormulas().get(0);
 				Formula ne_subsumer = ne_premise.getSubFormulas().get(1);
 				Formula ne_subsumee_filler = null;
@@ -261,9 +263,7 @@ public class Inferencer {
 				}
 				//OWLClassExpression owl_pe_subsumer_filler = bc.toOWLClassExpression(pe_subsumer_filler);
 				//OWLClassExpression owl_ne_subsumee_filler = bc.toOWLClassExpression(ne_subsumee_filler);
-				Formula inclusion = new Inclusion(pe_subsumer_filler, ne_subsumee_filler);
-				OWLAxiom axiom = bc.toOWLSubClassOfAxiom(inclusion);
-				if (reasoner.isEntailed(axiom)) {
+				if (pe_subsumer_filler.equals(ne_subsumee_filler)) {
 					Formula new_inclusion = null;
 					if (ne_subsumee instanceof Exists) {
 						new_inclusion = new Inclusion(pe_subsumee, ne_subsumer);
@@ -271,13 +271,45 @@ public class Inferencer {
 						Set<Formula> new_conjunct_set = new HashSet<>(ne_subsumee.getSubformulae());
 						new_conjunct_set.remove(stored_conjunct);
 						new_conjunct_set.add(pe_subsumee);
-						Formula new_subsumee = new And(new_conjunct_set);
-						new_inclusion = new Inclusion(new_subsumee, ne_subsumer);
-					} 
+						if (new_conjunct_set.contains(ne_subsumer)) {
+							//System.out.println("Bingo 3!");
+							break;
+						} else {
+							Formula new_subsumee = new And(new_conjunct_set);
+							new_inclusion = new Inclusion(new_subsumee, ne_subsumer);
+						}
+					}
 					//System.out.println("Looking forward = " + new_inclusion);
+					//System.out.println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 					output_list.add(new_inclusion);
+					
+				} else {
+					Formula inclusion = new Inclusion(pe_subsumer_filler, ne_subsumee_filler);
+					OWLAxiom axiom = bc.toOWLSubClassOfAxiom(inclusion);
+					// System.out.println("axiom before = " + axiom);
+					if (reasoner.isEntailed(axiom)) {
+						Formula new_inclusion = null;
+						if (ne_subsumee instanceof Exists) {
+							new_inclusion = new Inclusion(pe_subsumee, ne_subsumer);
+						} else {
+							Set<Formula> new_conjunct_set = new HashSet<>(ne_subsumee.getSubformulae());
+							new_conjunct_set.remove(stored_conjunct);
+							new_conjunct_set.add(pe_subsumee);
+							if (new_conjunct_set.contains(ne_subsumer)) {
+								//System.out.println("Bingo 4!");
+								break;
+							} else {
+								Formula new_subsumee = new And(new_conjunct_set);
+								new_inclusion = new Inclusion(new_subsumee, ne_subsumer);
+							}
+						}
+						//System.out.println("Looking backward = " + new_inclusion);
+						//System.out.println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+						output_list.add(new_inclusion);
+					}
 				}
-			}	
+				//System.out.println("=========================================================");
+			}
 		}
 		
 		//System.out.println("The output list of Ackermann_A: " + output_list);
