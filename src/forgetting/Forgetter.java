@@ -59,6 +59,10 @@ public class Forgetter {
 
 				if (pivot_list_normalised.isEmpty()) {
 					
+				} else if (fc.positive(concept, pivot_list_normalised) == 0 ||
+						fc.negative(concept, pivot_list_normalised) == 0) {
+					c_sig_list_normalised.addAll(inf.Purify(concept, pivot_list_normalised));
+
 				} else {
 					pivot_list_normalised = di.introduceDefiners(concept, pivot_list_normalised);	
 					pivot_list_normalised = inf.combination_A(concept, pivot_list_normalised, onto);
@@ -94,11 +98,8 @@ public class Forgetter {
 					if (pivot_list_normalised.isEmpty()) {
 						DefinerIntroducer.definer_set.remove(concept);
 
-					} else if (fc.positive(concept, pivot_list_normalised) == 0) {
-						d_sig_list_normalised.addAll(inf.Purify(concept, pivot_list_normalised));
-						DefinerIntroducer.definer_set.remove(concept);
-
-					} else if (fc.negative(concept, pivot_list_normalised) == 0) {
+					} else if (fc.positive(concept, pivot_list_normalised) == 0 ||
+							fc.negative(concept, pivot_list_normalised) == 0) {
 						d_sig_list_normalised.addAll(inf.Purify(concept, pivot_list_normalised));
 						DefinerIntroducer.definer_set.remove(concept);
 
@@ -106,14 +107,15 @@ public class Forgetter {
 						pivot_list_normalised = di.introduceDefiners(concept, pivot_list_normalised);
 						pivot_list_normalised = inf.combination_A(concept, pivot_list_normalised, onto);
 						d_sig_list_normalised.addAll(pivot_list_normalised);
+						DefinerIntroducer.definer_set.remove(concept);
 					}
 				}
 
-			} while (definer_set.size() > DefinerIntroducer.definer_set.size());
+			} while (true);
 
 		}
 		
-		System.out.println("Forgetting Unsuccessful!");
+		//System.out.println("DefinerIntroducer.definer_set = " + DefinerIntroducer.definer_set);
 		
 		return formula_list_normalised;
 	}
