@@ -1,7 +1,7 @@
 ### For User
 Usage of the Prototype:
 
-1. To get the prototype work, first you need to make sure you have Java Runtime Environment installed on your machine, and we suggest you using an Java IDE such as Eclipse to run the program.
+1. To get the prototype work, first you need to make sure you have Java Runtime Environment installed on your machine, and we suggest you using a Java IDE such as Eclipse to run the code.
 
 2. Download the source code, together with other files, and import it as a Java project into your IDE.
 
