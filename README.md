@@ -1,3 +1,4 @@
+### For User
 Usage of the Prototype:
 
 1. To get the prototype work, first you need to make sure you have Java Runtime Environment installed on your machine, and we suggest you using an Java IDE such as Eclipse to run the program.
@@ -12,7 +13,7 @@ file:///C:/Users/XXXXX/Desktop/snomed_ct/snomed_ct_interntional/ontology_201707.
 Path: 
 file:///C:/Users/XXXXX/Desktop/snomed_ct/<br/>
 
-4. To run the uniform interpolation method, go to the directory "Swing" and run the main method in GUI.java to call a GUI pop up, where you could load the target ontology by cliking the "Load Ontology" button, and specify the concept/role names you want to forget, click the "Forget" button you will see the uniform interpolant computed by the system. You could save the result locally as an .owl file by clicking the "Save Ontology" button.
+4. To run the uniform interpolation method, go to the directory "Swing" and run the main method in GUI.java to call a GUI out, where you could load the target ontology by cliking the "Load Ontology" button, and specify the concept/role names you want to forget, click the "Forget" button you will see the uniform interpolant computed by the system. You could save the result locally as an .owl file by clicking the "Save Ontology" button.
 
 
 ### For Developer
