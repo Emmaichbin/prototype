@@ -6,11 +6,11 @@ Usage of the Prototype:
 
 3. To run the logical difference computation method, go to the directory "Forgetting" and run the main method in LDiff.java. Consider the task of computing the UI-based logical difference UI-Diff(T1, T2) between two ELH-TBoxes T1 and T2: the input are T1, T2 and a path specifying the location where you want the output (a set of witnesses) to be saved; see the following example.
 T1:
-file:///C:/Users/zhaoy/Desktop/snomed_ct/snomed_ct_interntional/ontology_201701.owl
+file:///C:/Users/XXXXX/Desktop/snomed_ct/snomed_ct_interntional/ontology_201701.owl
 T2:
-file:///C:/Users/zhaoy/Desktop/snomed_ct/snomed_ct_interntional/ontology_201707.owl
+file:///C:/Users/XXXXX/Desktop/snomed_ct/snomed_ct_interntional/ontology_201707.owl
 Path: 
-file:///C:/Users/zhaoy/Desktop/snomed_ct/
+file:///C:/Users/XXXXX/Desktop/snomed_ct/
 
 4. To run the uniform interpolation method, go to the directory "Swing" and run the main method in GUI.java to call a GUI pop up, where you could load the target ontology by cliking the "Load Ontology" button, and specify the concept/role names you want to forget, click the "Forget" button you will see the uniform interpolant computed by the system. You could save the result locally as an .owl file by clicking the "Save Ontology" button.
 
